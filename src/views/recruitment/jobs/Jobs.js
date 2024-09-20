@@ -1,91 +1,164 @@
-import React, { useEffect, useState, createRef } from 'react'
-import PropTypes from 'prop-types'
-import classNames from 'classnames'
-import { CRow, CCol, CCard, CCardHeader, CCardBody } from '@coreui/react'
-import { rgbToHex } from '@coreui/utils'
-import { DocsLink } from 'src/components'
+import React, { useEffect, useState, createRef } from 'react';
+import PropTypes from 'prop-types';
+import classNames from 'classnames';
+import {
+    CRow, CCol, CCard, CCardHeader, CCardBody,
+    CTable,
+    CTableBody,
+    CTableDataCell,
+    CTableHead,
+    CTableHeaderCell,
+    CTableRow,
+    CForm,
+    CFormCheck,
+    CFormInput,
+    CFormLabel,
+    CFormSelect,
+    CInputGroup,
+    CInputGroupText,
+    CButton,
+    CButtonGroup
+} from '@coreui/react';
+import { rgbToHex } from '@coreui/utils';
+import { DocsLink } from 'src/components';
 
-const ThemeView = () => {
-  const [color, setColor] = useState('rgb(255, 255, 255)')
-  const ref = createRef()
 
-  useEffect(() => {
-    const el = ref.current.parentNode.firstChild
-    const varColor = window.getComputedStyle(el).getPropertyValue('background-color')
-    setColor(varColor)
-  }, [ref])
-
-  return (
-    <table className="table w-100" ref={ref}>
-      <tbody>
-        <tr>
-          <td className="text-body-secondary">HEX:</td>
-          <td className="font-weight-bold">{rgbToHex(color)}</td>
-        </tr>
-        <tr>
-          <td className="text-body-secondary">RGB:</td>
-          <td className="font-weight-bold">{color}</td>
-        </tr>
-      </tbody>
-    </table>
-  )
-}
-
-const ThemeColor = ({ className, children }) => {
-  const classes = classNames(className, 'theme-color w-75 rounded mb-3')
-  return (
-    <CCol xs={12} sm={6} md={4} xl={2} className="mb-4">
-      <div className={classes} style={{ paddingTop: '75%' }}></div>
-      {children}
-      <ThemeView />
-    </CCol>
-  )
-}
-
-ThemeColor.propTypes = {
-  children: PropTypes.node,
-  className: PropTypes.string,
-}
 
 const Jobs = () => {
-  return (
-    <>
-      <CCard className="mb-4">
-        <CCardHeader>
-          Theme colors
-          <DocsLink href="https://coreui.io/docs/utilities/colors/" />
-        </CCardHeader>
-        <CCardBody>
-          <CRow>
-            <ThemeColor className="bg-primary">
-              <h6>Brand Primary Color</h6>
-            </ThemeColor>
-            <ThemeColor className="bg-secondary">
-              <h6>Brand Secondary Color</h6>
-            </ThemeColor>
-            <ThemeColor className="bg-success">
-              <h6>Brand Success Color</h6>
-            </ThemeColor>
-            <ThemeColor className="bg-danger">
-              <h6>Brand Danger Color</h6>
-            </ThemeColor>
-            <ThemeColor className="bg-warning">
-              <h6>Brand Warning Color</h6>
-            </ThemeColor>
-            <ThemeColor className="bg-info">
-              <h6>Brand Info Color</h6>
-            </ThemeColor>
-            <ThemeColor className="bg-light">
-              <h6>Brand Light Color</h6>
-            </ThemeColor>
-            <ThemeColor className="bg-dark">
-              <h6>Brand Dark Color</h6>
-            </ThemeColor>
-          </CRow>
-        </CCardBody>
-      </CCard>
-    </>
-  )
-}
+    return (
+        <>
+            <CCard className="mb-4">
+                <CCardHeader>
+                    <strong>Layout</strong> <small>Auto-sizing</small>
+                </CCardHeader>
+                <CCardBody>
+                    <CForm className="row gx-3 gy-2 align-items-center">
+                        <CCol sm={3}>
+                            <CFormLabel className="visually-hidden" htmlFor="specificSizeInputName">
+                                Name
+                            </CFormLabel>
+                            <CFormInput id="specificSizeInputName" placeholder="Jane Doe" />
+                        </CCol>
+                        <CCol sm={3}>
+                            <CFormLabel className="visually-hidden" htmlFor="specificSizeInputGroupUsername">
+                                Username
+                            </CFormLabel>
+                            <CInputGroup>
+                                <CInputGroupText>@</CInputGroupText>
+                                <CFormInput id="specificSizeInputGroupUsername" placeholder="Username" />
+                            </CInputGroup>
+                        </CCol>
+                        <CCol sm={3}>
+                            <CFormLabel className="visually-hidden" htmlFor="specificSizeSelect">
+                                Preference
+                            </CFormLabel>
+                            <CFormSelect id="specificSizeSelect">
+                                <option>Choose...</option>
+                                <option value="1">One</option>
+                                <option value="2">Two</option>
+                                <option value="3">Three</option>
+                            </CFormSelect>
+                        </CCol>
+                        <CCol xs="auto">
+                            <CFormCheck type="checkbox" id="autoSizingCheck2" label="Remember me" />
+                        </CCol>
+                        <CCol xs="auto">
+                            <CButton color="secondary" type="submit">
+                                Search
+                            </CButton>
+                        </CCol>
+                    </CForm>
+                </CCardBody>
+            </CCard>
+            <CCard className="mb-4">
+                <CCardHeader>
+                    Theme colors
 
-export default Jobs
+                </CCardHeader>
+                <CCardBody>
+                    <CRow>
+                    <div className="d-grid gap-2 d-md-flex justify-content-md-end">
+  <CButton color="primary">Add New Job</CButton>
+</div>
+                    </CRow>
+                    <CRow>
+                        <CTable align="middle" responsive>
+                            <CTableHead>
+                                <CTableRow>
+                                    <CTableHeaderCell scope="col" className="w-25">
+                                        Heading 1
+                                    </CTableHeaderCell>
+                                    <CTableHeaderCell scope="col" className="w-25">
+                                        Heading 2
+                                    </CTableHeaderCell>
+                                    <CTableHeaderCell scope="col" className="w-25">
+                                        Heading 3
+                                    </CTableHeaderCell>
+                                    <CTableHeaderCell scope="col" className="w-25">
+                                        Heading 4
+                                    </CTableHeaderCell>
+                                </CTableRow>
+                            </CTableHead>
+                            <CTableBody>
+                                <CTableRow>
+                                    <CTableDataCell>
+                                        This cell inherits <code>vertical-align: middle;</code> from the table
+                                    </CTableDataCell>
+                                    <CTableDataCell>
+                                        This cell inherits <code>vertical-align: middle;</code> from the table
+                                    </CTableDataCell>
+                                    <CTableDataCell>
+                                        This cell inherits <code>vertical-align: middle;</code> from the table
+                                    </CTableDataCell>
+                                    <CTableDataCell>
+                                    <CButtonGroup role="group" aria-label="Basic mixed styles example">
+  <CButton color="info">Edit</CButton>
+  <CButton color="success">Applicants</CButton>
+  <CButton color="danger">Delete</CButton>
+</CButtonGroup>
+                                    </CTableDataCell>
+                                </CTableRow>
+                                <CTableRow align="bottom">
+                                    <CTableDataCell>
+                                        This cell inherits <code>vertical-align: bottom;</code> from the table row
+                                    </CTableDataCell>
+                                    <CTableDataCell>
+                                        This cell inherits <code>vertical-align: bottom;</code> from the table row
+                                    </CTableDataCell>
+                                    <CTableDataCell>
+                                        This cell inherits <code>vertical-align: bottom;</code> from the table row
+                                    </CTableDataCell>
+                                    <CTableDataCell>
+                                    <CButtonGroup role="group" aria-label="Basic mixed styles example">
+  <CButton color="info">Edit</CButton>
+  <CButton color="success">Applicants</CButton>
+  <CButton color="danger">Delete</CButton>
+</CButtonGroup>
+                                    </CTableDataCell>
+                                </CTableRow>
+                                <CTableRow>
+                                    <CTableDataCell>
+                                        This cell inherits <code>vertical-align: middle;</code> from the table
+                                    </CTableDataCell>
+                                    <CTableDataCell>
+                                        This cell inherits <code>vertical-align: middle;</code> from the table
+                                    </CTableDataCell>
+                                    <CTableDataCell align="top">This cell is aligned to the top.</CTableDataCell>
+                                    <CTableDataCell>
+                                    <CButtonGroup role="group" aria-label="Basic mixed styles example">
+  <CButton color="info">Edit</CButton>
+  <CButton color="success">Applicants</CButton>
+  <CButton color="danger">Delete</CButton>
+</CButtonGroup>
+                                    </CTableDataCell>
+                                </CTableRow>
+                            </CTableBody>
+                        </CTable>
+                    </CRow>
+                </CCardBody>
+            </CCard>
+        </>
+    );
+};
+
+export default Jobs;

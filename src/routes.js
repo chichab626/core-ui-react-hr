@@ -57,8 +57,8 @@ const Candidates = React.lazy(() => import('./views/recruitment/candidates/Candi
 const routes = [
   { path: '/', exact: true, name: 'Home' },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
-  { path: '/recruitment/jobs', name: 'Jobs', component: Jobs }, // New route for Jobs
-  { path: '/recruitment/candidates', name: 'Candidates', component: Candidates }, // New route for Jobs
+  { path: '/recruitment/jobs', name: 'Jobs', element: Jobs }, // New route for Jobs
+  { path: '/recruitment/candidates', name: 'Candidates', element: Candidates }, // New route for Jobs
 
 
   { path: '/theme', name: 'Theme', element: Colors, exact: true },
