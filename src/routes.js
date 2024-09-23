@@ -52,12 +52,18 @@ const Toasts = React.lazy(() => import('./views/notifications/toasts/Toasts'))
 const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 
 const Jobs = React.lazy(() => import('./views/recruitment/jobs/Jobs'));
+const AddJobPage = React.lazy(() => import('./views/recruitment/jobs/JobForm').then(module => ({ default: module.AddJobPage })));
+const EditJobPage = React.lazy(() => import('./views/recruitment/jobs/JobForm').then(module => ({ default: module.EditJobPage })));
+
 const Candidates = React.lazy(() => import('./views/recruitment/candidates/Candidates'));
 
 const routes = [
   { path: '/', exact: true, name: 'Home' },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
+  { path: '/recruitment', name: 'Recruitment', element: Jobs},
   { path: '/recruitment/jobs', name: 'Jobs', element: Jobs }, // New route for Jobs
+  { path: '/recruitment/jobs/add', name: 'Add Job', element: AddJobPage }, // New route for Jobs
+  { path: '/recruitment/jobs/edit/:id', name: 'Edit Job', element: EditJobPage }, // New route for Jobs
   { path: '/recruitment/candidates', name: 'Candidates', element: Candidates }, // New route for Jobs
 
 
