@@ -181,11 +181,11 @@ const JobApplicants = ({ jobData }) => {
                         </CPagination>
                     )}
 
-<CButtonGroup className="float-end mb-3">
-    <CButton color="danger" onClick={bulkRemoveApplicants}>Remove Selected</CButton>
-    <CButton color="primary" onClick={bulkRemoveApplicants}>Save Applicants</CButton>
-    <CButton color="success" onClick={bulkRemoveApplicants}>Hire Selected</CButton>
-</CButtonGroup>
+                    <CButtonGroup className="float-end mb-3">
+                        <CButton color="danger" onClick={bulkRemoveApplicants}>Remove Selected</CButton>
+                        <CButton color="primary" onClick={bulkRemoveApplicants}>Save Applicants</CButton>
+                        <CButton color="info" onClick={bulkRemoveApplicants}>Hire Selected</CButton>
+                    </CButtonGroup>
 
                 </CCol>
 

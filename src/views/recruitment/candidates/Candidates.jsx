@@ -118,7 +118,7 @@ const Candidates = () => {
                                 <CTableDataCell>{candidate.company.catchPhrase}</CTableDataCell>
                                 <CTableDataCell>
                                     <CButton
-                                        color="primary"
+                                        color="info"
                                         size="sm"
                                         onClick={(e) => { e.stopPropagation(); handleEditClick(candidate.id); }}>
                                         <CIcon icon={cilPen} /> {/* Edit icon */}
