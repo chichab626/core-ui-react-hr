@@ -70,6 +70,11 @@ const Jobs = () => {
         navigate(`/recruitment/jobs/edit/${jobId}`);
     };
 
+    const handleApplicantClick = (jobId) => {
+        console.log(jobId);
+        navigate(`/recruitment/jobs/applicants/${jobId}`);
+    };
+
     return (
         <div>
             <div className="mb-3">
@@ -108,7 +113,7 @@ const Jobs = () => {
                                 <CTableDataCell>{`$${row.salary.toLocaleString()}`}</CTableDataCell>
                                 <CTableDataCell>{row.openPositions}</CTableDataCell>
                                 <CTableDataCell>
-                                    <CButton color="secondary" className="position-relative me-3">
+                                    <CButton color="secondary" className="position-relative me-3" onClick={() => handleApplicantClick(index)}>
                                         Applicants
                                         <CBadge color="success" position="top-start" shape="rounded-pill">
                                             {parseInt(Math.random() * 100)}

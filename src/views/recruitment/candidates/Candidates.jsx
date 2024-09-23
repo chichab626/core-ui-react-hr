@@ -62,6 +62,15 @@ const Candidates = () => {
         setData(sortedData);
     };
 
+    const handleAddClick = () => {
+        navigate('/recruitment/candidates/add');
+    };
+
+    const handleEditClick = (id) => {
+        console.log(id);
+        navigate(`/recruitment/candidates/edit/${id}`);
+    };
+
     return (
         <div>
             <h2>Candidates List</h2>
@@ -111,7 +120,7 @@ const Candidates = () => {
                                     <CButton
                                         color="primary"
                                         size="sm"
-                                        onClick={(e) => { e.stopPropagation(); alert('Edit clicked'); }}>
+                                        onClick={(e) => { e.stopPropagation(); handleEditClick(candidate.id); }}>
                                         <CIcon icon={cilPen} /> {/* Edit icon */}
                                     </CButton>{' '}
                                     <CButton
@@ -157,6 +166,10 @@ const Candidates = () => {
                     Next
                 </CPaginationItem>
             </CPagination>
+            <div className="d-grid gap-2 col-6 mx-auto">
+                <CButton color="primary" onClick={() => handleAddClick()}>Add Candidate</CButton>
+
+            </div>
         </div>
     );
 };

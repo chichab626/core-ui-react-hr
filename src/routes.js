@@ -52,19 +52,25 @@ const Toasts = React.lazy(() => import('./views/notifications/toasts/Toasts'))
 const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 
 const Jobs = React.lazy(() => import('./views/recruitment/jobs/Jobs'));
+const JobApplicantsPage = React.lazy(() => import('./views/recruitment/jobs/JobApplicants'));
 const AddJobPage = React.lazy(() => import('./views/recruitment/jobs/JobForm').then(module => ({ default: module.AddJobPage })));
 const EditJobPage = React.lazy(() => import('./views/recruitment/jobs/JobForm').then(module => ({ default: module.EditJobPage })));
 
 const Candidates = React.lazy(() => import('./views/recruitment/candidates/Candidates'));
+const AddCandidatePage = React.lazy(() => import('./views/recruitment/candidates/CandidateForm').then(module => ({ default: module.AddCandidatePage })));
+const EditCandidatePage = React.lazy(() => import('./views/recruitment/candidates/CandidateForm').then(module => ({ default: module.EditCandidatePage })));
 
 const routes = [
   { path: '/', exact: true, name: 'Home' },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
   { path: '/recruitment', name: 'Recruitment', element: Jobs},
-  { path: '/recruitment/jobs', name: 'Jobs', element: Jobs }, // New route for Jobs
-  { path: '/recruitment/jobs/add', name: 'Add Job', element: AddJobPage }, // New route for Jobs
-  { path: '/recruitment/jobs/edit/:id', name: 'Edit Job', element: EditJobPage }, // New route for Jobs
-  { path: '/recruitment/candidates', name: 'Candidates', element: Candidates }, // New route for Jobs
+  { path: '/recruitment/jobs', name: 'Jobs', element: Jobs }, 
+  { path: '/recruitment/jobs/add', name: 'Add Job', element: AddJobPage }, 
+  { path: '/recruitment/jobs/edit/:id', name: 'Edit Job', element: EditJobPage },
+  { path: '/recruitment/jobs/applicants/:id', name: 'Job Applicants', element: JobApplicantsPage },
+  { path: '/recruitment/candidates', name: 'Candidates', element: Candidates }, 
+  { path: '/recruitment/candidates/add', name: 'Add Candidate', element: AddCandidatePage }, 
+  { path: '/recruitment/candidates/edit/:id', name: 'Edit Candidate', element: EditCandidatePage }, 
 
 
   { path: '/theme', name: 'Theme', element: Colors, exact: true },
