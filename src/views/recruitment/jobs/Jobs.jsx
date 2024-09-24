@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { CTable, CTableHead, CTableBody, CTableRow, CTableHeaderCell, CTableDataCell, CPagination, CPaginationItem, CFormInput, CButton, CBadge } from '@coreui/react';
+import {
+    CTable, CTableHead, CTableBody, CTableRow, CTableHeaderCell, CTableDataCell, CPagination, CPaginationItem, CFormInput, CButton, CBadge,
+    CCard,
+    CCardBody,
+    CCardText,
+    CCardHeader,
+    CRow
+} from '@coreui/react';
 import { useNavigate } from 'react-router-dom';
 import CIcon from '@coreui/icons-react';
 import { cilPencil, cilTrash } from '@coreui/icons'; // Import the specific icons you need
@@ -77,97 +84,110 @@ const Jobs = () => {
 
     return (
         <div>
-            <div className="mb-3">
-                <CFormInput
-                    type="text"
-                    placeholder="Search jobs, location, salary..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
-            </div>
+            <CCard>
+                <CCardHeader as="h5" className="text-center">Jobs</CCardHeader>
+                <CCardBody>
+                    <CCardText>
+                        List of Available Jobs
+                    </CCardText>
+                </CCardBody>
 
-            <CTable striped hover>
-                <CTableHead>
-                    <CTableRow>
-                        <CTableHeaderCell onClick={() => handleSort('jobTitle')}>
-                            Job Title {sortColumn === 'jobTitle' && (sortDirection === 'asc' ? '↑' : '↓')}
-                        </CTableHeaderCell>
-                        <CTableHeaderCell onClick={() => handleSort('location')}>
-                            Location {sortColumn === 'location' && (sortDirection === 'asc' ? '↑' : '↓')}
-                        </CTableHeaderCell>
-                        <CTableHeaderCell onClick={() => handleSort('salary')}>
-                            Salary {sortColumn === 'salary' && (sortDirection === 'asc' ? '↑' : '↓')}
-                        </CTableHeaderCell>
-                        <CTableHeaderCell onClick={() => handleSort('openPositions')}>
-                            Open Positions {sortColumn === 'openPositions' && (sortDirection === 'asc' ? '↑' : '↓')}
-                        </CTableHeaderCell>
-                        <CTableHeaderCell>Actions</CTableHeaderCell>
-                    </CTableRow>
-                </CTableHead>
-                <CTableBody>
-                    {currentData.length > 0 ? (
-                        currentData.map((row, index) => (
-                            <CTableRow key={index}>
-                                <CTableDataCell>{row.jobTitle}</CTableDataCell>
-                                <CTableDataCell>{row.location}</CTableDataCell>
-                                <CTableDataCell>{`$${row.salary.toLocaleString()}`}</CTableDataCell>
-                                <CTableDataCell>{row.openPositions}</CTableDataCell>
-                                <CTableDataCell>
-                                    <CButton color="secondary" className="position-relative me-3" onClick={() => handleApplicantClick(index)}>
-                                        Applicants
-                                        <CBadge color="success" position="top-start" shape="rounded-pill">
-                                            {parseInt(Math.random() * 100)}
-                                        </CBadge>
-                                    </CButton>
+                <CCardBody className='mx-3'>
+                    <CRow>
+                        <CFormInput
+                            type="text"
+                            placeholder="Search jobs, location, salary..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </CRow>
+                    <CRow>
+                        <CTable hover>
+                            <CTableHead>
+                                <CTableRow>
+                                    <CTableHeaderCell onClick={() => handleSort('jobTitle')}>
+                                        Job Title {sortColumn === 'jobTitle' && (sortDirection === 'asc' ? '↑' : '↓')}
+                                    </CTableHeaderCell>
+                                    <CTableHeaderCell onClick={() => handleSort('location')}>
+                                        Location {sortColumn === 'location' && (sortDirection === 'asc' ? '↑' : '↓')}
+                                    </CTableHeaderCell>
+                                    <CTableHeaderCell onClick={() => handleSort('salary')}>
+                                        Salary {sortColumn === 'salary' && (sortDirection === 'asc' ? '↑' : '↓')}
+                                    </CTableHeaderCell>
+                                    <CTableHeaderCell onClick={() => handleSort('openPositions')}>
+                                        Open Positions {sortColumn === 'openPositions' && (sortDirection === 'asc' ? '↑' : '↓')}
+                                    </CTableHeaderCell>
+                                    <CTableHeaderCell>Actions</CTableHeaderCell>
+                                </CTableRow>
+                            </CTableHead>
+                            <CTableBody>
+                                {currentData.length > 0 ? (
+                                    currentData.map((row, index) => (
+                                        <CTableRow key={index}>
+                                            <CTableDataCell>{row.jobTitle}</CTableDataCell>
+                                            <CTableDataCell>{row.location}</CTableDataCell>
+                                            <CTableDataCell>{`$${row.salary.toLocaleString()}`}</CTableDataCell>
+                                            <CTableDataCell>{row.openPositions}</CTableDataCell>
+                                            <CTableDataCell>
+                                                <CButton color="secondary" className="position-relative me-3" onClick={() => handleApplicantClick(index)}>
+                                                    Applicants
+                                                    <CBadge color="success" position="top-start" shape="rounded-pill">
+                                                        {parseInt(Math.random() * 100)}
+                                                    </CBadge>
+                                                </CButton>
 
-                                    <CButton color="info" className="me-2" onClick={() => handleEditClick(index)}>
-                                        <CIcon icon={cilPencil} /> {/* Edit icon */}
-                                    </CButton>
-                                    <CButton color="danger" onClick={() => handleDeleteClick(index)}>
-                                        <CIcon icon={cilTrash} /> {/* Delete icon */}
-                                    </CButton>
-                                </CTableDataCell>
-                            </CTableRow>
-                        ))
-                    ) : (
-                        <CTableRow>
-                            <CTableDataCell colSpan="5" className="text-center">
-                                No Jobs Found
-                            </CTableDataCell>
-                        </CTableRow>
-                    )}
-                </CTableBody>
-            </CTable>
+                                                <CButton color="info" className="me-2" onClick={() => handleEditClick(index)}>
+                                                    <CIcon icon={cilPencil} /> {/* Edit icon */}
+                                                </CButton>
+                                                <CButton color="danger" onClick={() => handleDeleteClick(index)}>
+                                                    <CIcon icon={cilTrash} /> {/* Delete icon */}
+                                                </CButton>
+                                            </CTableDataCell>
+                                        </CTableRow>
+                                    ))
+                                ) : (
+                                    <CTableRow>
+                                        <CTableDataCell colSpan="5" className="text-center">
+                                            No Jobs Found
+                                        </CTableDataCell>
+                                    </CTableRow>
+                                )}
+                            </CTableBody>
+                        </CTable>
+                    </CRow>
+                    <CRow>
+                        <CPagination aria-label="Page navigation">
+                            <CPaginationItem
+                                disabled={currentPage === 1}
+                                onClick={() => setCurrentPage(currentPage - 1)}
+                            >
+                                Previous
+                            </CPaginationItem>
+                            {[...Array(totalPages)].map((_, i) => (
+                                <CPaginationItem
+                                    key={i}
+                                    active={i + 1 === currentPage}
+                                    onClick={() => setCurrentPage(i + 1)}
+                                >
+                                    {i + 1}
+                                </CPaginationItem>
+                            ))}
+                            <CPaginationItem
+                                disabled={currentPage === totalPages}
+                                onClick={() => setCurrentPage(currentPage + 1)}
+                            >
+                                Next
+                            </CPaginationItem>
+                        </CPagination>
 
-            {/* Pagination */}
-            <CPagination aria-label="Page navigation">
-                <CPaginationItem
-                    disabled={currentPage === 1}
-                    onClick={() => setCurrentPage(currentPage - 1)}
-                >
-                    Previous
-                </CPaginationItem>
-                {[...Array(totalPages)].map((_, i) => (
-                    <CPaginationItem
-                        key={i}
-                        active={i + 1 === currentPage}
-                        onClick={() => setCurrentPage(i + 1)}
-                    >
-                        {i + 1}
-                    </CPaginationItem>
-                ))}
-                <CPaginationItem
-                    disabled={currentPage === totalPages}
-                    onClick={() => setCurrentPage(currentPage + 1)}
-                >
-                    Next
-                </CPaginationItem>
-            </CPagination>
-
-            <div className="d-grid gap-2 col-6 mx-auto">
-                <CButton color="primary" onClick={() => handleAddJobClick()}>Add Job</CButton>
-
-            </div>
+                    </CRow>
+                    <CRow>
+                        <div className="d-grid gap-2 col-6 mx-auto">
+                            <CButton color="primary" onClick={() => handleAddJobClick()}>Add Job</CButton>
+                        </div>
+                    </CRow>
+                </CCardBody>
+            </CCard>
         </div>
     );
 };

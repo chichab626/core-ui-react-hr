@@ -16,7 +16,10 @@ import {
     CPagination,
     CPaginationItem,
     CSpinner,
-    CButtonGroup
+    CButtonGroup,
+    CCard,
+    CCardBody,
+    CCardHeader
 } from '@coreui/react';
 
 const JobApplicants = ({ jobData }) => {
@@ -114,144 +117,187 @@ const JobApplicants = ({ jobData }) => {
     const paginatedAvailableApplicants = paginate(filteredAvailableApplicants, availablePage);
 
     return (
-        <CContainer className="px-4">
-            {/* Display Job Information */}
-            <CRow className="mb-4">
-                <h5>Job Title: {jobTitle}</h5>
-                <CCol>
+        <CContainer>
+            <CRow>
+                <CCard >
+                    <CCardHeader as="h5" className="text-center">{jobTitle}</CCardHeader>
 
-                    <p>Location: {location}</p>
-                    <p>Open Positions: {openPositions}</p>
-                </CCol>
-                <CCol>
-                    <p>Salary: ${salary}</p>
-                    <p>Job Description: {jobDescription}</p>
-                </CCol>
+
+                    <CCardBody>
+
+                        <CRow>
+                            <CCol>
+
+                                <p>Location: {location}</p>
+                                <p>Open Positions: {openPositions}</p>
+                            </CCol>
+                            <CCol>
+                                <p>Salary: ${salary}</p>
+                                <p>Job Description: {jobDescription}</p>
+                            </CCol>
+                        </CRow>
+                        <CRow>
+                            {/* Content removed */}
+                        </CRow>
+                        <CRow>
+                            {/* Content removed */}
+                        </CRow>
+                    </CCardBody>
+                </CCard>
+
             </CRow>
-            <h4>Job Applicants</h4>
-            <CRow xs={{ gutterX: 5 }}>
+
+            <CRow className='my-3'>
                 <CCol>
-                    <h5>Added Applicants</h5>
-                    <CTable striped hover>
-                        <CTableHead>
-                            <CTableRow>
-                                <CTableHeaderCell>
-                                    <CFormCheck
-                                        checked={selectedAdded.length === addedApplicants.length && addedApplicants.length > 0}
-                                        onChange={(e) => {
-                                            if (e.target.checked) {
-                                                setSelectedAdded(addedApplicants.map(applicant => applicant.id));
-                                            } else {
-                                                setSelectedAdded([]);
-                                            }
-                                        }}
-                                    />
-                                </CTableHeaderCell>
-                                <CTableHeaderCell>Name</CTableHeaderCell>
-                                <CTableHeaderCell>Email</CTableHeaderCell>
-                            </CTableRow>
-                        </CTableHead>
-                        <CTableBody>
-                            {addedApplicants.length === 0 ? (
-                                <CTableRow>
-                                    <CTableDataCell colSpan={3}>No applicants yet</CTableDataCell>
-                                </CTableRow>
-                            ) : (
-                                paginatedAddedApplicants.map((applicant) => (
-                                    <CTableRow key={applicant.id}>
-                                        <CTableDataCell>
-                                            <CFormCheck
-                                                checked={selectedAdded.includes(applicant.id)}
-                                                onChange={() => toggleSelection(applicant.id, selectedAdded, setSelectedAdded)}
-                                            />
-                                        </CTableDataCell>
-                                        <CTableDataCell>{applicant.name}</CTableDataCell>
-                                        <CTableDataCell>{applicant.email}</CTableDataCell>
-                                    </CTableRow>
-                                ))
-                            )}
-                        </CTableBody>
-                    </CTable>
+                    <CCard >
+                        <CCardHeader as="h5" className="text-center">Job Applicants</CCardHeader>
+                        <CCardBody>
 
-                    {/* Pagination for Added Applicants */}
-                    {addedApplicants.length > itemsPerPage && (
-                        <CPagination aria-label="Added applicants pagination">
-                            <CPaginationItem onClick={() => setAddedPage(addedPage - 1)} disabled={addedPage === 1}>Previous</CPaginationItem>
-                            <CPaginationItem onClick={() => setAddedPage(addedPage + 1)} disabled={addedPage * itemsPerPage >= addedApplicants.length}>Next</CPaginationItem>
-                        </CPagination>
-                    )}
+                            <CRow>
+                                <CTable hover>
+                                    <CTableHead>
+                                        <CTableRow>
+                                            <CTableHeaderCell>
+                                                <CFormCheck
+                                                    checked={selectedAdded.length === addedApplicants.length && addedApplicants.length > 0}
+                                                    onChange={(e) => {
+                                                        if (e.target.checked) {
+                                                            setSelectedAdded(addedApplicants.map(applicant => applicant.id));
+                                                        } else {
+                                                            setSelectedAdded([]);
+                                                        }
+                                                    }}
+                                                />
+                                            </CTableHeaderCell>
+                                            <CTableHeaderCell>Name</CTableHeaderCell>
+                                            <CTableHeaderCell>Email</CTableHeaderCell>
+                                        </CTableRow>
+                                    </CTableHead>
+                                    <CTableBody>
+                                        {addedApplicants.length === 0 ? (
+                                            <CTableRow>
+                                                <CTableDataCell colSpan={3}>No applicants yet</CTableDataCell>
+                                            </CTableRow>
+                                        ) : (
+                                            paginatedAddedApplicants.map((applicant) => (
+                                                <CTableRow key={applicant.id}>
+                                                    <CTableDataCell>
+                                                        <CFormCheck
+                                                            checked={selectedAdded.includes(applicant.id)}
+                                                            onChange={() => toggleSelection(applicant.id, selectedAdded, setSelectedAdded)}
+                                                        />
+                                                    </CTableDataCell>
+                                                    <CTableDataCell>{applicant.name}</CTableDataCell>
+                                                    <CTableDataCell>{applicant.email}</CTableDataCell>
+                                                </CTableRow>
+                                            ))
+                                        )}
+                                    </CTableBody>
+                                </CTable>
+                            </CRow>
+                            <CRow>
 
-                    <CButtonGroup className="float-end mb-3">
-                        <CButton color="danger" onClick={bulkRemoveApplicants}>Remove Selected</CButton>
-                        <CButton color="primary" onClick={bulkRemoveApplicants}>Save Applicants</CButton>
-                        <CButton color="info" onClick={bulkRemoveApplicants}>Hire Selected</CButton>
-                    </CButtonGroup>
-
+                                <CCol xs={4}>                                                    {addedApplicants.length > itemsPerPage && (
+                                    <CPagination aria-label="Added applicants pagination">
+                                        <CPaginationItem onClick={() => setAddedPage(addedPage - 1)} disabled={addedPage === 1}>Previous</CPaginationItem>
+                                        <CPaginationItem onClick={() => setAddedPage(addedPage + 1)} disabled={addedPage * itemsPerPage >= addedApplicants.length}>Next</CPaginationItem>
+                                    </CPagination>
+                                )}</CCol>
+                                <CCol>                    <CButtonGroup className="float-end mb-3 " size="sm" >
+                                    
+                                    <CButton color="primary" onClick={bulkRemoveApplicants}>Save Applicants</CButton>
+                                    <CButton color="info" onClick={bulkRemoveApplicants}>Hire Selected</CButton>
+                                    <CButton color="danger" onClick={bulkRemoveApplicants}>Remove Selected</CButton>
+                                </CButtonGroup></CCol>
+                            </CRow>
+                            <CRow>
+                                {/* Content removed */}
+                            </CRow>
+                        </CCardBody>
+                    </CCard>
                 </CCol>
 
                 <CCol>
-                    <h5>Available Candidates</h5>
-                    {/* Search Input Field */}
-                    <CFormInput
-                        type="text"
-                        placeholder="Search by name or email"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}  // Update search query state
-                        className="mb-3"
-                    />
+                    <CCard >
+                        <CCardHeader as="h5" className="text-center">Available Candidates</CCardHeader>
+                        <CCardBody>
+                            <CRow className='mx-2'>                    <CFormInput
+                                type="text"
+                                placeholder="Search by name or email"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}  // Update search query state
+                                className="mb-3"
+                            /></CRow>
+                            <CRow>
+                                {loading ? (
+                                    <CSpinner />
+                                ) : error ? (
+                                    <p>{error}</p>
+                                ) : (
+                                    <>
+                                        <CTable hover>
+                                            <CTableHead>
+                                                <CTableRow>
+                                                    <CTableHeaderCell>
+                                                        <CFormCheck
+                                                            checked={selectedAvailable.length === filteredAvailableApplicants.length && filteredAvailableApplicants.length > 0}
+                                                            onChange={(e) => {
+                                                                if (e.target.checked) {
+                                                                    setSelectedAvailable(filteredAvailableApplicants.map(applicant => applicant.id));
+                                                                } else {
+                                                                    setSelectedAvailable([]);
+                                                                }
+                                                            }}
+                                                        />
+                                                    </CTableHeaderCell>
+                                                    <CTableHeaderCell>Name</CTableHeaderCell>
+                                                    <CTableHeaderCell>Email</CTableHeaderCell>
+                                                </CTableRow>
+                                            </CTableHead>
+                                            <CTableBody>
+                                                {paginatedAvailableApplicants.map((applicant) => (
+                                                    <CTableRow key={applicant.id}>
+                                                        <CTableDataCell>
+                                                            <CFormCheck
+                                                                checked={selectedAvailable.includes(applicant.id)}
+                                                                onChange={() => toggleSelection(applicant.id, selectedAvailable, setSelectedAvailable)}
+                                                            />
+                                                        </CTableDataCell>
+                                                        <CTableDataCell>{applicant.name}</CTableDataCell>
+                                                        <CTableDataCell>{applicant.email}</CTableDataCell>
+                                                    </CTableRow>
+                                                ))}
+                                            </CTableBody>
+                                        </CTable>
+
+
+                                    </>
+                                )}
+                            </CRow>
+                            <CRow>
+
+                                <CCol >                                                    
+                                <CButton color="success" onClick={bulkAddApplicants} size="sm">Add Selected</CButton>
+                                </CCol>
+                                <CCol xs={4}>                                                            {/* Pagination for Available Applicants */}
+                                    {filteredAvailableApplicants.length > itemsPerPage && (
+                                        <CPagination aria-label="Available applicants pagination">
+                                            <CPaginationItem onClick={() => setAvailablePage(availablePage - 1)} disabled={availablePage === 1}>Previous</CPaginationItem>
+                                            <CPaginationItem onClick={() => setAvailablePage(availablePage + 1)} disabled={availablePage * itemsPerPage >= filteredAvailableApplicants.length}>Next</CPaginationItem>
+                                        </CPagination>
+                                    )}</CCol>
+                            </CRow>
+                            <CRow>
+                                {/* Content removed */}
+                            </CRow>
+                        </CCardBody>
+                    </CCard>
+
+
 
                     {/* Handle loading, error, and content states */}
-                    {loading ? (
-                        <CSpinner />
-                    ) : error ? (
-                        <p>{error}</p>
-                    ) : (
-                        <>
-                            <CTable striped hover>
-                                <CTableHead>
-                                    <CTableRow>
-                                        <CTableHeaderCell>
-                                            <CFormCheck
-                                                checked={selectedAvailable.length === filteredAvailableApplicants.length && filteredAvailableApplicants.length > 0}
-                                                onChange={(e) => {
-                                                    if (e.target.checked) {
-                                                        setSelectedAvailable(filteredAvailableApplicants.map(applicant => applicant.id));
-                                                    } else {
-                                                        setSelectedAvailable([]);
-                                                    }
-                                                }}
-                                            />
-                                        </CTableHeaderCell>
-                                        <CTableHeaderCell>Name</CTableHeaderCell>
-                                        <CTableHeaderCell>Email</CTableHeaderCell>
-                                    </CTableRow>
-                                </CTableHead>
-                                <CTableBody>
-                                    {paginatedAvailableApplicants.map((applicant) => (
-                                        <CTableRow key={applicant.id}>
-                                            <CTableDataCell>
-                                                <CFormCheck
-                                                    checked={selectedAvailable.includes(applicant.id)}
-                                                    onChange={() => toggleSelection(applicant.id, selectedAvailable, setSelectedAvailable)}
-                                                />
-                                            </CTableDataCell>
-                                            <CTableDataCell>{applicant.name}</CTableDataCell>
-                                            <CTableDataCell>{applicant.email}</CTableDataCell>
-                                        </CTableRow>
-                                    ))}
-                                </CTableBody>
-                            </CTable>
 
-                            {/* Pagination for Available Applicants */}
-                            {filteredAvailableApplicants.length > itemsPerPage && (
-                                <CPagination aria-label="Available applicants pagination">
-                                    <CPaginationItem onClick={() => setAvailablePage(availablePage - 1)} disabled={availablePage === 1}>Previous</CPaginationItem>
-                                    <CPaginationItem onClick={() => setAvailablePage(availablePage + 1)} disabled={availablePage * itemsPerPage >= filteredAvailableApplicants.length}>Next</CPaginationItem>
-                                </CPagination>
-                            )}
-                        </>
-                    )}
-                    <CButton color="success" onClick={bulkAddApplicants}>Add Selected</CButton>
+
                 </CCol>
             </CRow>
             <CRow>

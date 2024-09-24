@@ -56,7 +56,7 @@ const _nav = [
   {
     component: CNavItem,
     name: 'Onboarding',
-    to: '/theme/colors',
+    to: '/hr/onboarding',
     icon: <CIcon icon={cilFork} customClassName="nav-icon" />,
   },
   {

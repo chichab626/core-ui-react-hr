@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { CForm, CFormInput, CButton, CCol, CRow } from '@coreui/react';
+import {
+    CForm, CFormInput, CButton, CCol, CRow,
+    CCard,
+    CCardBody,
+    CCardHeader,
+    CSpinner
+} from '@coreui/react';
 import { useNavigate, useParams } from 'react-router-dom';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
@@ -61,71 +67,79 @@ const JobForm = ({ mode, jobData }) => {
 
     return (
         <CForm onSubmit={handleSubmit}>
-            <h2>{mode === 'add' ? 'Add Job' : 'Edit Job'}</h2>
+            <CCard>
+                <CCardHeader as="h5" className="text-center">{mode === 'add' ? 'Add Job' : 'Edit Job'}</CCardHeader>
+                <CCardBody>
 
-            <CRow className="mb-3">
-                <CCol>
-                    <CFormInput
-                        type="text"
-                        value={jobTitle}
-                        onChange={(e) => setJobTitle(e.target.value)}
-                        placeholder="Job Title"
-                        invalid={!!validation.jobTitle}
-                    />
-                    {validation.jobTitle && <div className="invalid-feedback">{validation.jobTitle}</div>}
-                </CCol>
-                <CCol>
-                    <CFormInput
-                        type="text"
-                        value={location}
-                        onChange={(e) => setLocation(e.target.value)}
-                        placeholder="Location"
-                        invalid={!!validation.location}
-                    />
-                    {validation.location && <div className="invalid-feedback">{validation.location}</div>}
-                </CCol>
-            </CRow>
-            <CRow className="mb-3">
-                <CCol>
-                    <CFormInput
-                        type="text"
-                        value={formatCurrency(salary)}
-                        onChange={handleSalaryChange}
-                        placeholder="Salary"
-                        invalid={!!validation.salary}
-                    />
-                    {validation.salary && <div className="invalid-feedback">{validation.salary}</div>}
-                </CCol>
-                <CCol>
-                    <CFormInput
-                        type="number"
-                        value={openPositions}
-                        onChange={(e) => setOpenPositions(e.target.value)}
-                        placeholder="Open Positions"
-                        invalid={!!validation.openPositions}
-                    />
-                    {validation.openPositions && <div className="invalid-feedback">{validation.openPositions}</div>}
-                </CCol>
-            </CRow>
-            <CRow className="mb-3">
-                <CCol>
-                    <ReactQuill
-                        value={jobDescription}
-                        onChange={setJobDescription}
-                        placeholder="Job Description"
-                    />
-                </CCol>
-            </CRow>
-            <CRow className="mb-3">
-                <CCol>
-                    <CButton color="danger" onClick={() => navigate(-1)} className="me-2">
-                        Back
-                    </CButton>
-                    <CButton type="submit" color="primary">
-                        {mode === 'add' ? 'Add Job' : 'Update Job'}
-                    </CButton>
-                </CCol>
-            </CRow>
+                </CCardBody>
+
+                <CCardBody className='mx-3'>
+                    <CRow className="mb-3">
+                        <CCol>
+                            <CFormInput
+                                type="text"
+                                value={jobTitle}
+                                onChange={(e) => setJobTitle(e.target.value)}
+                                placeholder="Job Title"
+                                invalid={!!validation.jobTitle}
+                            />
+                            {validation.jobTitle && <div className="invalid-feedback">{validation.jobTitle}</div>}
+                        </CCol>
+                        <CCol>
+                            <CFormInput
+                                type="text"
+                                value={location}
+                                onChange={(e) => setLocation(e.target.value)}
+                                placeholder="Location"
+                                invalid={!!validation.location}
+                            />
+                            {validation.location && <div className="invalid-feedback">{validation.location}</div>}
+                        </CCol>
+                    </CRow>
+                    <CRow className="mb-3">
+                        <CCol>
+                            <CFormInput
+                                type="text"
+                                value={formatCurrency(salary)}
+                                onChange={handleSalaryChange}
+                                placeholder="Salary"
+                                invalid={!!validation.salary}
+                            />
+                            {validation.salary && <div className="invalid-feedback">{validation.salary}</div>}
+                        </CCol>
+                        <CCol>
+                            <CFormInput
+                                type="number"
+                                value={openPositions}
+                                onChange={(e) => setOpenPositions(e.target.value)}
+                                placeholder="Open Positions"
+                                invalid={!!validation.openPositions}
+                            />
+                            {validation.openPositions && <div className="invalid-feedback">{validation.openPositions}</div>}
+                        </CCol>
+                    </CRow>
+                    <CRow className="mb-3">
+                        <CCol>
+                            <ReactQuill
+                                value={jobDescription}
+                                onChange={setJobDescription}
+                                placeholder="Job Description"
+                            />
+                        </CCol>
+                    </CRow>
+                    <CRow className="mb-3">
+                        <CCol>
+                            <CButton color="danger" onClick={() => navigate(-1)} className="me-2">
+                                Back
+                            </CButton>
+                            <CButton type="submit" color="primary">
+                                {mode === 'add' ? 'Add Job' : 'Update Job'}
+                            </CButton>
+                        </CCol>
+                    </CRow>
+                </CCardBody>
+            </CCard>
+
         </CForm>
     );
 };
@@ -141,13 +155,13 @@ const EditJobPage = () => {
     useEffect(() => {
         const fetchJob = async () => {
             // Mock data for testing
-            const data = { jobTitle: 'Pharmacist', status: true, datePosted: '2023-12-26', location: 'Saint-Claude', salary: 179240, openPositions: 3 };
+            const data = { jobTitle: 'Pharmacist', status: true, datePosted: '2023-12-26', location: 'Saint-Claude', salary: 179240, openPositions: 3, jobDescription: 'Describe the job and skills required' };
             setJobData(data);
         };
         fetchJob();
     }, [id]);
 
-    return jobData ? <JobForm mode="edit" jobData={jobData} /> : <div>Loading...</div>;
+    return jobData ? <JobForm mode="edit" jobData={jobData} /> : <CSpinner />;
 };
 
 export { AddJobPage, EditJobPage };

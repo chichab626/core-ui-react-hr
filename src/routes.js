@@ -60,6 +60,9 @@ const Candidates = React.lazy(() => import('./views/recruitment/candidates/Candi
 const AddCandidatePage = React.lazy(() => import('./views/recruitment/candidates/CandidateForm').then(module => ({ default: module.AddCandidatePage })));
 const EditCandidatePage = React.lazy(() => import('./views/recruitment/candidates/CandidateForm').then(module => ({ default: module.EditCandidatePage })));
 
+const NewHires = React.lazy(() => import('./views/onboarding/NewHires'));
+const ChecklistPage = React.lazy(() => import('./views/onboarding/Checklist'));
+
 const routes = [
   { path: '/', exact: true, name: 'Home' },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
@@ -71,6 +74,9 @@ const routes = [
   { path: '/recruitment/candidates', name: 'Candidates', element: Candidates }, 
   { path: '/recruitment/candidates/add', name: 'Add Candidate', element: AddCandidatePage }, 
   { path: '/recruitment/candidates/edit/:id', name: 'Edit Candidate', element: EditCandidatePage }, 
+
+  { path: '/hr/onboarding', name: 'New Hires', element: NewHires }, 
+  { path: '/hr/onboarding/checklist/:id', name: 'Checklist', element: ChecklistPage }, 
 
 
   { path: '/theme', name: 'Theme', element: Colors, exact: true },
