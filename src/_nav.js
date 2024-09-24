@@ -61,8 +61,8 @@ const _nav = [
   },
   {
     component: CNavItem,
-    name: 'Promotion',
-    to: '/theme/typography',
+    name: 'Employees',
+    to: '/hr/employees',
     icon: <CIcon icon={cilBolt} customClassName="nav-icon" />,
   },
   {

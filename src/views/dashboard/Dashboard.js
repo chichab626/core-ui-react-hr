@@ -184,7 +184,7 @@ const Dashboard = () => {
           <CRow>
             <CCol sm={5}>
               <h4 id="traffic" className="card-title mb-0">
-                Traffic
+                Promotions
               </h4>
               <div className="small text-body-secondary">January - July 2023</div>
             </CCol>
