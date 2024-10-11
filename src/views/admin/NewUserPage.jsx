@@ -13,20 +13,19 @@ import {
   CFormLabel,
 } from '@coreui/react'
 import apiService from '../../service/apiService.js'
+import SalaryInput from '../../components/SalaryInput'
 
 const NewUserPage = () => {
-  const [userData, setUserData] = useState({
-    email: '',
-    password: '',
-    role: null,
-    name: '',
-    jobTitle: '',
-    location: '',
-    salary: '', // Salary is optional
-  });
-  const [validation, setValidation] = useState({}); // Validation state
-  const [successMessage, setSuccessMessage] = useState('');
-  const navigate = useNavigate();
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [role, setRole] = useState(null)
+  const [name, setName] = useState('')
+  const [jobTitle, setJobTitle] = useState('')
+  const [location, setLocation] = useState('')
+  const [salary, setSalary] = useState('') // Salary is optional
+  const [validation, setValidation] = useState({}) // Validation state
+  const [successMessage, setSuccessMessage] = useState('')
+  const navigate = useNavigate()
 
   const roleOptions = [
     { value: 'HRManager', label: 'HR Manager' },
@@ -34,47 +33,47 @@ const NewUserPage = () => {
     { value: 'Administrator', label: 'Administrator' },
   ]
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target
-    setUserData({ ...userData, [name]: value })
-  }
-
   const handleRoleChange = (selectedRole) => {
-    setUserData({ ...userData, role: selectedRole })
+    setRole(selectedRole)
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
 
     // Basic validation
-    if (!userData.email || !userData.password || !userData.role) {
-      setValidation({ error: 'Please fill in all required fields.' });
-      return;
+    if (!email || !password || !role) {
+      setValidation({ error: 'Please fill in all required fields.' })
+      return
     }
 
     // Additional validation if role is 'Employee'
-    if (userData.role.value === 'Employee') {
-      if (!userData.name || !userData.jobTitle || !userData.location) {
-        setValidation({ error: 'Please fill in all required fields for Employee.' });
-        return;
+    if (role.value === 'Employee') {
+      if (!name || !jobTitle || !location) {
+        setValidation({ error: 'Please fill in all required fields for Employee.' })
+        return
       }
     }
 
     const newUser = {
-      email: userData.email,
-      password: userData.password,
-      role: userData.role.value,
-      ...(userData.role.value === 'Employee' && {
-        name: userData.name,
-        jobTitle: userData.jobTitle,
-        location: userData.location,
-        salary: userData.salary, // Optional field
+      email,
+      password,
+      role: role.value,
+      ...(role.value === 'Employee' && {
+        name,
+        jobTitle,
+        location,
+        salary, // Optional field
       }),
-    };
+    }
 
     try {
       const response = await apiService.post('/users', newUser) // Post to /users endpoint
-      setSuccessMessage(`User created successfully with ID: ${response.id}`)
+
+      let successMessage = `Created successfully with User ID: ${response.user.id}`
+      if (role.value === 'Employee') {
+        successMessage = `Employee User created successfully. User Id ${response.user.id} Employee Id ${response.employee.id}`
+      }
+      setSuccessMessage(successMessage)
     } catch (error) {
       console.log(error)
       setValidation({ error: 'An error occurred while creating the user.' })
@@ -95,8 +94,8 @@ const NewUserPage = () => {
                 type="email"
                 name="email"
                 placeholder="Enter email"
-                value={userData.email}
-                onChange={handleInputChange}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </CCol>
@@ -109,8 +108,8 @@ const NewUserPage = () => {
                 type="password"
                 name="password"
                 placeholder="Enter password"
-                value={userData.password}
-                onChange={handleInputChange}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
               />
             </CCol>
@@ -120,7 +119,7 @@ const NewUserPage = () => {
             <CCol>
               <CFormLabel>Role</CFormLabel>
               <Select
-                value={userData.role}
+                value={role}
                 onChange={handleRoleChange}
                 options={roleOptions}
                 placeholder="Select role"
@@ -141,7 +140,7 @@ const NewUserPage = () => {
           </CRow>
 
           {/* Additional Fields when Employee is selected */}
-          {userData.role && userData.role.value === 'Employee' && (
+          {role && role.value === 'Employee' && (
             <>
               <CRow className="mb-3">
                 <CCol>
@@ -150,8 +149,8 @@ const NewUserPage = () => {
                     type="text"
                     name="name"
                     placeholder="Enter name"
-                    value={userData.name}
-                    onChange={handleInputChange}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                     required
                   />
                 </CCol>
@@ -164,8 +163,8 @@ const NewUserPage = () => {
                     type="text"
                     name="jobTitle"
                     placeholder="Enter job title"
-                    value={userData.jobTitle}
-                    onChange={handleInputChange}
+                    value={jobTitle}
+                    onChange={(e) => setJobTitle(e.target.value)}
                     required
                   />
                 </CCol>
@@ -178,8 +177,8 @@ const NewUserPage = () => {
                     type="text"
                     name="location"
                     placeholder="Enter location"
-                    value={userData.location}
-                    onChange={handleInputChange}
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
                     required
                   />
                 </CCol>
@@ -188,12 +187,11 @@ const NewUserPage = () => {
               <CRow className="mb-3">
                 <CCol>
                   <CFormLabel>Salary (Optional)</CFormLabel>
-                  <CFormInput
-                    type="text"
-                    name="salary"
-                    placeholder="Enter salary (if applicable)"
-                    value={userData.salary}
-                    onChange={handleInputChange}
+                  <SalaryInput
+                    value={salary} // Pass the salary value
+                    onChange={setSalary} // Pass the setter to update the salary
+                    readOnly={false}
+                    validationError={validation.salary}
                   />
                 </CCol>
               </CRow>

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import {
   CForm,
-  CFormInput,
   CButton,
+  CFormInput,
   CCol,
   CRow,
   CCard,
@@ -14,23 +14,24 @@ import Select from 'react-select' // Import react-select
 import { useNavigate, useParams } from 'react-router-dom'
 import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
+import SalaryInput from '../../../components/SalaryInput'
 
 const JobForm = ({ mode, jobData }) => {
   const [jobTitle, setJobTitle] = useState('')
   const [location, setLocation] = useState('')
-  const [salary, setSalary] = useState('')
+  const [salary, setSalary] = useState('') // Keep the salary state here
   const [openPositions, setOpenPositions] = useState('')
   const [jobDescription, setJobDescription] = useState('')
-  const [hiringManager, setHiringManager] = useState(null) // State for the selected hiring manager
-  const [managers, setManagers] = useState([]) // State for available hiring managers
-  const [validation, setValidation] = useState({}) // For validation states
+  const [hiringManager, setHiringManager] = useState(null)
+  const [managers, setManagers] = useState([])
+  const [validation, setValidation] = useState({})
   const navigate = useNavigate()
 
   useEffect(() => {
     if (mode === 'edit' || (mode === 'view' && jobData)) {
       setJobTitle(jobData.jobTitle)
       setLocation(jobData.location)
-      setSalary(jobData.salary)
+      setSalary(jobData.salary) // Initialize the salary value
       setOpenPositions(jobData.openPositions)
       setJobDescription(jobData.jobDescription)
       setHiringManager(jobData.hiringManager) // Pre-select the manager in edit/view mode
@@ -72,33 +73,16 @@ const JobForm = ({ mode, jobData }) => {
       let newJob = {
         jobTitle,
         location,
-        salary: sanitizeSalary(salary),
+        salary, // Sanitized salary is already passed
         openPositions,
         jobDescription,
-        hiringManagerId : hiringManager.value,
+        hiringManagerId: hiringManager?.value,
       }
 
       console.log(JSON.stringify(newJob, null, 2))
-      //navigate('/jobs') // Redirect after submit
+      // navigate('/jobs') // Redirect after submit
     }
   }
-
-  function sanitizeSalary(salary) {
-    if (!salary) return ''
-    let result = String(salary).replace(/[^0-9.,]/g, '').replace(/,/g, '')
-    const parts = result.split('.')
-    return parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : parts.join('.')
-  }
-
-  const formatCurrency = (value) => {
-    const numericValue = String(value).replace(/[^0-9]/g, '')
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(numericValue / 100)
-  }
-
-  const handleSalaryChange = (e) => setSalary(e.target.value)
 
   return (
     <CForm onSubmit={handleSubmit}>
@@ -106,9 +90,7 @@ const JobForm = ({ mode, jobData }) => {
         <CCardHeader as="h5" className="text-center">
           {mode === 'add' ? 'Add Job' : mode === 'edit' ? 'Edit Job' : 'View Job'}
         </CCardHeader>
-        <CCardBody></CCardBody>
-
-        <CCardBody className="mx-3">
+        <CCardBody>
           <CRow className="mb-3">
             <CCol>
               <CFormInput
@@ -134,17 +116,15 @@ const JobForm = ({ mode, jobData }) => {
             </CCol>
           </CRow>
 
+          {/* Replaced Salary Input with SalaryInput Component */}
           <CRow className="mb-3">
             <CCol>
-              <CFormInput
-                type="text"
-                value={formatCurrency(salary)}
-                onChange={handleSalaryChange}
-                placeholder="Salary"
-                invalid={!!validation.salary}
+              <SalaryInput
+                value={salary} // Pass the salary value
+                onChange={setSalary} // Pass the setter to update the parent
                 readOnly={mode === 'view'}
+                validationError={validation.salary}
               />
-              {validation.salary && <div className="invalid-feedback">{validation.salary}</div>}
             </CCol>
             <CCol>
               <CFormInput
