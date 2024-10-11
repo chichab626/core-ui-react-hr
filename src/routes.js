@@ -69,6 +69,7 @@ const AddEmployeePage = React.lazy(() => import('./views/employees/EmployeeForm'
 const EditEmployeePage = React.lazy(() => import('./views/employees/EmployeeForm').then(module => ({ default: module.EditEmployeePage })));
 const ViewEmployeePage = React.lazy(() => import('./views/employees/EmployeeForm').then(module => ({ default: module.ViewEmployeePage })));
 
+const NewUserPage = React.lazy(() => import('./views/admin/NewUserPage'));
 
 const routes = [
     { path: '/', exact: true, name: 'Home' },
@@ -92,6 +93,9 @@ const routes = [
     { path: '/hr/employees/add', name: 'Add Employee', element: AddEmployeePage },
     { path: '/hr/employees/edit/:id', name: 'Edit Employee', element: EditEmployeePage },
     { path: '/hr/employees/view/:id', name: 'View Employee', element: ViewEmployeePage },
+
+    // aedmin
+    { path: '/admin/user/add', name: 'New User', element: NewUserPage },
 
 
     { path: '/theme', name: 'Theme', element: Colors, exact: true },

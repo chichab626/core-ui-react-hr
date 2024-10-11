@@ -75,7 +75,7 @@ const JobForm = ({ mode, jobData }) => {
         salary: sanitizeSalary(salary),
         openPositions,
         jobDescription,
-        hiringManager,
+        hiringManagerId : hiringManager.value,
       }
 
       console.log(JSON.stringify(newJob, null, 2))

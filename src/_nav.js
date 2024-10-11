@@ -84,7 +84,7 @@ const _nav = [
   {
     component: CNavItem,
     name: 'Register',
-    to: '/register',
+    to: '/admin/user/add',
     icon: <CIcon icon={cilBook} customClassName="nav-icon" />,
   },
 
