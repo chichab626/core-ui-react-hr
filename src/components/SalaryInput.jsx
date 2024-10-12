@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { CFormInput } from '@coreui/react'
 
-const SalaryInput = ({ value, onChange, readOnly, validationError }) => {
+const SalaryInput = ({ value, onChange, readOnly, validationError, label }) => {
   // Formatting the currency input
   const formatCurrency = (value) => {
     const numericValue = String(value).replace(/[^0-9]/g, '')
@@ -19,7 +19,6 @@ const SalaryInput = ({ value, onChange, readOnly, validationError }) => {
     const rawValue = e.target.value
     const formatted = formatCurrency(rawValue)
     setFormattedValue(formatted) // Update formatted display
-    console.log(formatted)
     const sanitizedValue = sanitizeSalary(formatted) // Clean value to send to parent
     onChange(sanitizedValue) // Call parent’s onChange handler with the raw value
   }
@@ -41,6 +40,7 @@ const SalaryInput = ({ value, onChange, readOnly, validationError }) => {
         placeholder="Salary"
         invalid={!!validationError}
         readOnly={readOnly}
+        label =  {label}
       />
       {validationError && <div className="invalid-feedback">{validationError}</div>}
     </div>

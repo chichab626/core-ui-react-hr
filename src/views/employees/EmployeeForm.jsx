@@ -11,14 +11,27 @@ import {
 } from '@coreui/react'
 import { CSpinner } from '@coreui/react'
 import { useNavigate, useParams } from 'react-router-dom'
+import apiService from '../../service/apiService.js'
+import SalaryInput from '../../components/SalaryInput'
 
 const EmployeeForm = ({ mode, employee, onSubmit }) => {
+  const navigate = useNavigate()
+  const [formData, setFormData] = useState({ ...employee })
 
-    const navigate = useNavigate();
+  useEffect(() => {
+    setFormData({ ...employee }) // Update local state when employee prop changes
+  }, [employee])
 
-    const onCancel = () => {
-        navigate(-1)
-    }
+  const handleChange = (fieldName, value) => {
+    
+    setFormData((prevData) => ({
+      ...prevData,
+      [fieldName]: value,
+    }))
+  }
+  const onCancel = () => {
+    navigate(-1)
+  }
 
   return (
     <CCard>
@@ -26,14 +39,15 @@ const EmployeeForm = ({ mode, employee, onSubmit }) => {
         {mode === 'add' ? 'Add Employee' : mode === 'edit' ? 'Edit Employee' : 'View Employee'}
       </CCardHeader>
       <CCardBody>
-        <CForm onSubmit={onSubmit}>
+        <CForm onSubmit={(e) => onSubmit(e, formData)}>
           {mode !== 'add' && (
             <CRow>
               <CCol md={6}>
                 <CFormInput
+                  name="employeeId"
                   type="text"
                   label="Employee ID"
-                  value={employee.employeeId || ''}
+                  value={formData.employeeId || ''}
                   disabled={true} // Disable input for both edit and view modes
                   required
                 />
@@ -45,8 +59,10 @@ const EmployeeForm = ({ mode, employee, onSubmit }) => {
               <CFormInput
                 type="text"
                 label="Name"
-                value={employee.name || ''}
+                name="name"
+                value={formData.name || ''}
                 disabled={mode === 'view'}
+                onChange={(e) => handleChange('name', e.target.value)}
                 required
               />
             </CCol>
@@ -54,8 +70,10 @@ const EmployeeForm = ({ mode, employee, onSubmit }) => {
               <CFormInput
                 type="email"
                 label="Email"
-                value={employee.email || ''}
+                name="email"
+                value={formData.email || ''}
                 disabled={mode === 'view'}
+                onChange={(e) => handleChange('email', e.target.value)}
                 required
               />
             </CCol>
@@ -65,8 +83,10 @@ const EmployeeForm = ({ mode, employee, onSubmit }) => {
               <CFormInput
                 type="text"
                 label="Job Title"
-                value={employee.jobTitle || ''}
+                name="jobTitle"
+                value={formData.jobTitle || ''}
                 disabled={mode === 'view'}
+                onChange={(e) => handleChange('jobTitle', e.target.value)}
                 required
               />
             </CCol>
@@ -74,8 +94,10 @@ const EmployeeForm = ({ mode, employee, onSubmit }) => {
               <CFormInput
                 type="text"
                 label="Location"
-                value={employee.location || ''}
+                name="location"
+                value={formData.location || ''}
                 disabled={mode === 'view'}
+                onChange={(e) => handleChange('location', e.target.value)}
                 required
               />
             </CCol>
@@ -84,12 +106,13 @@ const EmployeeForm = ({ mode, employee, onSubmit }) => {
           {/* Add Salary Input */}
           <CRow>
             <CCol md={6}>
-              <CFormInput
-                type="text"
-                label="Salary"
-                value={employee.salary || ''}
-                disabled={mode === 'view'}
+              <SalaryInput
+                value={formData.salary || ''}
+                readOnly={mode === 'view'}
+                name="salary"
+                onChange={(e) => handleChange('salary', e)}
                 required
+                label="Salary"
               />
             </CCol>
           </CRow>
@@ -124,27 +147,21 @@ const EmployeeForm = ({ mode, employee, onSubmit }) => {
 
 // AddEmployeePage Component
 const AddEmployeePage = () => {
-  return (
-    <EmployeeForm mode="add" employee={{}} onSubmit={handleAddEmployee} />
-  )
+  return <EmployeeForm mode="add" employee={{}} onSubmit={handleAddEmployee} />
 }
 
 // ViewEmployeePage Component
 const ViewEmployeePage = () => {
   const { id } = useParams()
   const [employeeData, setEmployeeData] = useState(null)
-  const navigate = useNavigate()
 
   useEffect(() => {
     const fetchEmployee = async () => {
+      const result = await apiService.get(`/employee/${id}`)
       // Mock data for testing
       const data = {
-        employeeId: '123456',
-        name: 'John Doe',
-        email: 'john.doe@example.com',
-        jobTitle: 'Software Engineer',
-        location: 'Toronto',
-        salary: '$70,000'
+        employeeId: result.id,
+        ...result,
       }
       setEmployeeData(data)
     }
@@ -159,34 +176,66 @@ const ViewEmployeePage = () => {
 }
 
 // EditEmployeePage Component
+import ToastNotification from '../../components/ToasterNotification.jsx'
+
 const EditEmployeePage = () => {
   const { id } = useParams()
   const [employeeData, setEmployeeData] = useState(null)
+  const [toastDeets, setToastDeets] = useState({})
 
   useEffect(() => {
     const fetchEmployee = async () => {
+      const result = await apiService.get(`/employee/${id}`)
       // Mock data for testing
       const data = {
-        employeeId: '123456',
-        name: 'John Doe',
-        email: 'john.doe@example.com',
-        jobTitle: 'Software Engineer',
-        location: 'Toronto',
-        salary: '$70,000'
+        employeeId: result.id,
+        ...result,
       }
       setEmployeeData(data)
     }
     fetchEmployee()
   }, [id])
 
+  const handleEditEmployee = async (event, data) => {
+    event.preventDefault()
+
+    try {
+      const newData = {
+        name: data.name,
+        email: data.email,
+        jobTitle: data.jobTitle,
+        location: data.location,
+        salary: data.salary,
+      }
+
+      await apiService.put('/employee/' + id, newData)
+
+      setToastDeets({
+        type: 'success',
+        message: 'Employee updated succesfully',
+        title: 'Edit Employee',
+      })
+
+    } catch (error) {
+
+      setToastDeets({
+        type: 'danger',
+        message: 'An error occurred while updating the employee.',
+        title: 'Edit Employee',
+      })
+    }
+  }
+
   return employeeData ? (
-    <EmployeeForm
-      mode="edit"
-      employee={employeeData}
-      onSubmit={handleEditEmployee}
-    />
+    <>
+      <EmployeeForm mode="edit" employee={employeeData} onSubmit={handleEditEmployee} />
+      <ToastNotification deets={toastDeets} />
+    </>
   ) : (
-    <CSpinner />
+    <>
+      <CSpinner />
+      <ToastNotification deets={toastDeets} />
+    </>
   )
 }
 
@@ -194,11 +243,6 @@ const EditEmployeePage = () => {
 const handleAddEmployee = (event) => {
   event.preventDefault()
   // Implement add employee logic here
-}
-
-const handleEditEmployee = (event) => {
-  event.preventDefault()
-  // Implement edit employee logic here
 }
 
 export { AddEmployeePage, EditEmployeePage, ViewEmployeePage }
