@@ -8,13 +8,15 @@ import {
   CButton,
   CRow,
   CCol,
+  CFormLabel,
 } from '@coreui/react'
 import { CSpinner } from '@coreui/react'
+import Select from 'react-select'
 import { useNavigate, useParams } from 'react-router-dom'
 import apiService from '../../service/apiService.js'
 import SalaryInput from '../../components/SalaryInput'
 
-const EmployeeForm = ({ mode, employee, onSubmit }) => {
+const EmployeeForm = ({ mode, employee, onSubmit, managers }) => {
   const navigate = useNavigate()
   const [formData, setFormData] = useState({ ...employee })
 
@@ -23,11 +25,11 @@ const EmployeeForm = ({ mode, employee, onSubmit }) => {
   }, [employee])
 
   const handleChange = (fieldName, value) => {
-    
     setFormData((prevData) => ({
       ...prevData,
       [fieldName]: value,
     }))
+    console.log(formData)
   }
   const onCancel = () => {
     navigate(-1)
@@ -54,7 +56,7 @@ const EmployeeForm = ({ mode, employee, onSubmit }) => {
               </CCol>
             </CRow>
           )}
-          <CRow>
+          <CRow className="my-2">
             <CCol md={6}>
               <CFormInput
                 type="text"
@@ -102,9 +104,7 @@ const EmployeeForm = ({ mode, employee, onSubmit }) => {
               />
             </CCol>
           </CRow>
-
-          {/* Add Salary Input */}
-          <CRow>
+          <CRow className="my-2">
             <CCol md={6}>
               <SalaryInput
                 value={formData.salary || ''}
@@ -114,6 +114,40 @@ const EmployeeForm = ({ mode, employee, onSubmit }) => {
                 required
                 label="Salary"
               />
+            </CCol>
+            <CCol md={6}>
+              <CFormLabel>Reports to</CFormLabel>
+              {mode !== 'view' && (
+                <Select
+                  value={formData.reportsTo}
+                  onChange={(e) => handleChange('reportsTo', e.value)}
+                  options={managers}
+                  isDisabled={mode === 'view'}
+                  placeholder="Select Hiring Manager"
+                  theme={(theme) => ({
+                    ...theme,
+                    colors: {
+                      ...theme.colors,
+                      primary25: '#495057', // Hover color for options
+                      primary: '#ced4da', // Border and active color
+                      neutral0: 'rgb(33 38 49)', // Dark background for menu and control
+                      neutral80: '#fff', // Text color
+                      neutral20: '#6c757d', // Border color
+                    },
+                  })}
+                />
+              )}
+
+              {mode === 'view' && (
+                <CFormInput
+                  type="text"
+                  name="location"
+                  value={formData.reportsTo || 'None'}
+                  disabled="true"
+                  onChange={(e) => handleChange('location', e.target.value)}
+                  required
+                />
+              )}
             </CCol>
           </CRow>
 
@@ -163,6 +197,10 @@ const ViewEmployeePage = () => {
         employeeId: result.id,
         ...result,
       }
+      if (data.reportsTo) {
+        const manager = await apiService.get(`/employee/${data.reportsTo}`)
+        data.reportsTo = manager.name
+      }
       setEmployeeData(data)
     }
     fetchEmployee()
@@ -182,18 +220,31 @@ const EditEmployeePage = () => {
   const { id } = useParams()
   const [employeeData, setEmployeeData] = useState(null)
   const [toastDeets, setToastDeets] = useState({})
+  const [managers, setManagers] = useState({})
 
   useEffect(() => {
-    const fetchEmployee = async () => {
-      const result = await apiService.get(`/employee/${id}`)
+    const fetchData = async () => {
+      let result = await apiService.get(`/employee/${id}`)
       // Mock data for testing
       const data = {
         employeeId: result.id,
         ...result,
       }
+
+      result = await apiService.get(`/employee?notId=${id}`)
+
+      let managersData = [{ value: null, label: 'None' }]
+
+      result.forEach((element) => {
+        managersData.push({ value: element.id, label: element.name })
+        if (element.id === data.reportsTo) {
+          data.reportsTo = { value: element.id, label: element.name }
+        }
+      })
       setEmployeeData(data)
+      setManagers(managersData)
     }
-    fetchEmployee()
+    fetchData()
   }, [id])
 
   const handleEditEmployee = async (event, data) => {
@@ -206,6 +257,7 @@ const EditEmployeePage = () => {
         jobTitle: data.jobTitle,
         location: data.location,
         salary: data.salary,
+        reportsTo: data.reportsTo,
       }
 
       await apiService.put('/employee/' + id, newData)
@@ -215,9 +267,7 @@ const EditEmployeePage = () => {
         message: 'Employee updated succesfully',
         title: 'Edit Employee',
       })
-
     } catch (error) {
-
       setToastDeets({
         type: 'danger',
         message: 'An error occurred while updating the employee.',
@@ -226,9 +276,14 @@ const EditEmployeePage = () => {
     }
   }
 
-  return employeeData ? (
+  return employeeData && managers ? (
     <>
-      <EmployeeForm mode="edit" employee={employeeData} onSubmit={handleEditEmployee} />
+      <EmployeeForm
+        mode="edit"
+        employee={employeeData}
+        onSubmit={handleEditEmployee}
+        managers={managers}
+      />
       <ToastNotification deets={toastDeets} />
     </>
   ) : (

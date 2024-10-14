@@ -131,8 +131,7 @@ const Employees = () => {
                     >
                       <CTableDataCell>{employee.name}</CTableDataCell>
                       <CTableDataCell>{employee.email}</CTableDataCell>
-                      <CTableDataCell>{employee.jobTitle}</CTableDataCell>{' '}
-                      {/* Assuming company name as job title */}
+                      <CTableDataCell>{employee.jobTitle}</CTableDataCell>
                       <CTableDataCell>{employee.location}</CTableDataCell>
                       <CTableDataCell>
                         <CButton
@@ -145,12 +144,6 @@ const Employees = () => {
                         >
                           <CIcon icon={cilPen} /> {/* Edit icon */}
                         </CButton>
-                        {/* <CButton
-                                                    color="danger"
-                                                    size="sm"
-                                                    onClick={(e) => { e.stopPropagation(); alert('Remove clicked'); }}>
-                                                    <CIcon icon={cilTrash} />
-                                                </CButton> */}
                       </CTableDataCell>
                     </CTableRow>
                   ))
