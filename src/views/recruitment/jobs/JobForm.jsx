@@ -29,29 +29,33 @@ const JobForm = ({ mode, jobData }) => {
   const [managers, setManagers] = useState([])
   const [toastDeets, setToastDeets] = useState({})
   const navigate = useNavigate()
-  const quillRef = useRef(null);
+  const quillRef = useRef(null)
+
+  const fetchHiringManagers = async () => {
+    const result = await apiService.get(`/employee`)
+
+    let managersData = []
+    result.forEach((element) => {
+      managersData.push({ value: element.id, label: element.name })
+      if (jobData?.hiringManagerId ===  element.id) {
+        setHiringManager({ value: element.id, label: element.name })
+      }
+    })
+    setManagers(managersData)
+
+  }
 
   useEffect(() => {
     if (mode === 'edit' || (mode === 'view' && jobData)) {
-      setJobTitle(jobData.jobTitle)
+      setJobTitle(jobData.title)
       setLocation(jobData.location)
       setSalary(jobData.salary)
       setOpenPositions(jobData.openPositions)
-      setJobDescription(jobData.jobDescription)
-      setHiringManager(jobData.hiringManager)
+      setJobDescription(jobData.description)
     }
 
-    // Mock API call to fetch hiring managers
-    const fetchHiringManagers = async () => {
-      const result = await apiService.get(`/employee`)
-
-      let managersData = []
-      result.forEach((element) => {
-        managersData.push({ value: element.id, label: element.name })
-      })
-      setManagers(managersData)
-    }
     fetchHiringManagers()
+    
   }, [mode, jobData])
 
   const handleSubmit = async (e) => {
@@ -101,9 +105,9 @@ const JobForm = ({ mode, jobData }) => {
                 <CFormInput
                   type="text"
                   value={jobTitle}
-                  label="Input Job Title"
+                  label="Job Title"
                   onChange={(e) => setJobTitle(e.target.value)}
-                  placeholder="Job Title"
+                  placeholder="Input Job Title"
                   required
                   readOnly={mode === 'view'}
                 />
@@ -123,7 +127,7 @@ const JobForm = ({ mode, jobData }) => {
             <CRow className="mb-3">
               <CCol>
                 <SalaryInput
-                label="Salary"
+                  label="Salary"
                   value={salary}
                   onChange={setSalary}
                   readOnly={mode === 'view'}
@@ -146,7 +150,6 @@ const JobForm = ({ mode, jobData }) => {
               <CCol>
                 <CFormLabel>Hiring Manager</CFormLabel>
                 <Select
-                
                   value={hiringManager}
                   onChange={setHiringManager}
                   options={managers}
@@ -170,7 +173,7 @@ const JobForm = ({ mode, jobData }) => {
             <CRow className="mb-3">
               <CCol>
                 <ReactQuill
-                ref={quillRef}
+                  ref={quillRef}
                   value={jobDescription}
                   onChange={setJobDescription}
                   placeholder="Job Description"
@@ -202,43 +205,57 @@ const AddJobPage = () => <JobForm mode="add" />
 const ViewJobPage = () => {
   const { id } = useParams()
   const [jobData, setJobData] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const fetchJob = async () => {
-      const data = {
-        jobTitle: 'Pharmacist',
-        location: 'Saint-Claude',
-        salary: 179240,
-        openPositions: 3,
-        jobDescription: 'Describe the job and skills required',
+      try {
+        setIsLoading(true)
+        const response = await apiService.get(`/job/${id}`)
+        setJobData(response.data)
+      } catch (error) {
+        console.error('Error fetching job data:', error)
+        // Handle error (e.g., show error message to user)
+      } finally {
+        setIsLoading(false)
       }
-      setJobData(data)
     }
     fetchJob()
   }, [id])
 
-  return jobData ? <JobForm mode="view" jobData={jobData} /> : <CSpinner />
+  if (isLoading) {
+    return <CSpinner />
+  }
+
+  return jobData ? <JobForm mode="view" jobData={jobData} /> : <div>Job not found</div>
 }
 
 const EditJobPage = () => {
   const { id } = useParams()
   const [jobData, setJobData] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const fetchJob = async () => {
-      const data = {
-        jobTitle: 'Pharmacist',
-        location: 'Saint-Claude',
-        salary: 179240,
-        openPositions: 3,
-        jobDescription: 'Describe the job and skills required',
+      try {
+        setIsLoading(true)
+        const response = await apiService.get(`/job/${id}`)
+        setJobData(response)
+      } catch (error) {
+        console.error('Error fetching job data:', error)
+        // Handle error (e.g., show error message to user)
+      } finally {
+        setIsLoading(false)
       }
-      setJobData(data)
     }
     fetchJob()
   }, [id])
 
-  return jobData ? <JobForm mode="edit" jobData={jobData} /> : <CSpinner />
+  if (isLoading) {
+    return <CSpinner />
+  }
+
+  return jobData ? <JobForm mode="edit" jobData={jobData} /> : <div>Job not found</div>
 }
 
 export { AddJobPage, EditJobPage, ViewJobPage }

@@ -19,109 +19,28 @@ import {
 } from '@coreui/react'
 import { useNavigate } from 'react-router-dom'
 import CIcon from '@coreui/icons-react'
-import { cilPencil, cilTrash } from '@coreui/icons' // Import the specific icons you need
+import { cilPencil, cilTrash } from '@coreui/icons'
+import apiService from '../../../service/apiService.js';
 
 const Jobs = () => {
-  // Job postings data from the provided initialData
-  const initialData = [
-    {
-      jobTitle: 'Pharmacist',
-      status: true,
-      datePosted: '2023-12-26',
-      location: 'Saint-Claude',
-      salary: 179240,
-      openPositions: 3,
-      hiringManagerName: 'Alice Johnson',
-    },
-    {
-      jobTitle: 'Senior Financial Analyst',
-      status: true,
-      datePosted: '2023-12-27',
-      location: 'Alīgūdarz',
-      salary: 163067,
-      openPositions: 5,
-      hiringManagerName: 'Bob Smith',
-    },
-    {
-      jobTitle: 'Mechanical Systems Engineer',
-      status: true,
-      datePosted: '2024-06-30',
-      location: 'Lisovi Sorochyntsi',
-      salary: 74277,
-      openPositions: 2,
-      hiringManagerName: 'Catherine Lee',
-    },
-    {
-      jobTitle: 'VP Quality Control',
-      status: false,
-      datePosted: '2024-06-24',
-      location: 'Mendeleyevsk',
-      salary: 192350,
-      openPositions: 1,
-      hiringManagerName: 'David Brown',
-    },
-    {
-      jobTitle: 'Financial Analyst',
-      status: true,
-      datePosted: '2024-09-06',
-      location: 'Hamburg Bramfeld',
-      salary: 118510,
-      openPositions: 4,
-      hiringManagerName: 'Evelyn Garcia',
-    },
-    {
-      jobTitle: 'Senior Editor',
-      status: true,
-      datePosted: '2024-07-16',
-      location: 'Dizhai',
-      salary: 110668,
-      openPositions: 2,
-      hiringManagerName: 'Frank Wilson',
-    },
-    {
-      jobTitle: 'Systems Administrator III',
-      status: false,
-      datePosted: '2024-03-13',
-      location: 'Tabia',
-      salary: 125018,
-      openPositions: 0,
-      hiringManagerName: 'Grace Lee',
-    },
-    {
-      jobTitle: 'Associate Professor',
-      status: false,
-      datePosted: '2024-04-17',
-      location: 'Pineleng',
-      salary: 107730,
-      openPositions: 3,
-      hiringManagerName: 'Hannah Davis',
-    },
-    {
-      jobTitle: 'Programmer Analyst III',
-      status: true,
-      datePosted: '2024-04-05',
-      location: 'Kangaslampi',
-      salary: 159983,
-      openPositions: 1,
-      hiringManagerName: 'Isaac Martin',
-    },
-    {
-      jobTitle: 'Information Systems Manager',
-      status: false,
-      datePosted: '2024-03-18',
-      location: 'Presnenskiy',
-      salary: 194072,
-      openPositions: 0,
-      hiringManagerName: 'Julia Thompson',
-    },
-  ]
-
-  const [data, setData] = useState(initialData)
+  const [data, setData] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const rowsPerPage = 5
-  const [sortColumn, setSortColumn] = useState('jobTitle')
+  const [sortColumn, setSortColumn] = useState('title')
   const [sortDirection, setSortDirection] = useState('asc')
+
+  useEffect(() => {
+    const fetchJobs = async () => {
+        try {
+          const response = await apiService.get('/job/')
+          setData(response)
+        } catch (error) {
+          console.error('Error fetching jobs:', error)
+        }
+      }
+    fetchJobs()
+  }, [])
 
   // Pagination logic
   const indexOfLastRow = currentPage * rowsPerPage
@@ -132,11 +51,11 @@ const Jobs = () => {
 
   // Search functionality
   useEffect(() => {
-    const filteredData = initialData.filter(
+    const filteredData = data.filter(
       (row) =>
-        row.jobTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        row.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         row.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        row.salary.toString().includes(searchTerm),
+        row.salary.toString().includes(searchTerm)
     )
     setData(filteredData)
     setCurrentPage(1) // Reset to the first page on search
@@ -163,12 +82,10 @@ const Jobs = () => {
   }
 
   const handleEditClick = (jobId) => {
-    console.log(jobId)
     navigate(`/recruitment/jobs/edit/${jobId}`)
   }
 
   const handleApplicantClick = (jobId) => {
-    console.log(jobId)
     navigate(`/recruitment/jobs/applicants/${jobId}`)
   }
 
@@ -195,8 +112,8 @@ const Jobs = () => {
             <CTable hover>
               <CTableHead>
                 <CTableRow>
-                  <CTableHeaderCell onClick={() => handleSort('jobTitle')}>
-                    Job Title {sortColumn === 'jobTitle' && (sortDirection === 'asc' ? '↑' : '↓')}
+                  <CTableHeaderCell onClick={() => handleSort('title')}>
+                    Job Title {sortColumn === 'title' && (sortDirection === 'asc' ? '↑' : '↓')}
                   </CTableHeaderCell>
                   <CTableHeaderCell onClick={() => handleSort('location')}>
                     Location {sortColumn === 'location' && (sortDirection === 'asc' ? '↑' : '↓')}
@@ -208,32 +125,22 @@ const Jobs = () => {
                     Open Positions{' '}
                     {sortColumn === 'openPositions' && (sortDirection === 'asc' ? '↑' : '↓')}
                   </CTableHeaderCell>
-                  <CTableHeaderCell>Hiring Manager</CTableHeaderCell>
                   <CTableHeaderCell>Actions</CTableHeaderCell>
                 </CTableRow>
               </CTableHead>
               <CTableBody>
                 {currentData.length > 0 ? (
-                  currentData.map((row, index) => (
-                    <CTableRow key={index}>
-                      <CTableDataCell>{row.jobTitle}</CTableDataCell>
+                  currentData.map((row) => (
+                    <CTableRow key={row.id}>
+                      <CTableDataCell>{row.title}</CTableDataCell>
                       <CTableDataCell>{row.location}</CTableDataCell>
-                      <CTableDataCell>{`$${row.salary.toLocaleString()}`}</CTableDataCell>
+                      <CTableDataCell>{`$${parseFloat(row.salary).toLocaleString()}`}</CTableDataCell>
                       <CTableDataCell>{row.openPositions}</CTableDataCell>
-                      <CTableDataCell>
-                        <CButton
-                          color="link"
-                          onClick={() => navigate(`/hr/employees/view/1`)}
-                        >
-                          {row.hiringManagerName}
-                        </CButton>
-                      </CTableDataCell>
-
                       <CTableDataCell>
                         <CButton
                           color="secondary"
                           className="position-relative me-3"
-                          onClick={() => handleApplicantClick(index)}
+                          onClick={() => handleApplicantClick(row.id)}
                         >
                           Applicants
                           <CBadge color="success" position="top-start" shape="rounded-pill">
@@ -244,12 +151,12 @@ const Jobs = () => {
                         <CButton
                           color="info"
                           className="me-2"
-                          onClick={() => handleEditClick(index)}
+                          onClick={() => handleEditClick(row.id)}
                         >
-                          <CIcon icon={cilPencil} /> {/* Edit icon */}
+                          <CIcon icon={cilPencil} />
                         </CButton>
-                        <CButton color="danger" onClick={() => handleDeleteClick(index)}>
-                          <CIcon icon={cilTrash} /> {/* Delete icon */}
+                        <CButton color="danger" onClick={() => handleDeleteClick(row.id)}>
+                          <CIcon icon={cilTrash} />
                         </CButton>
                       </CTableDataCell>
                     </CTableRow>
