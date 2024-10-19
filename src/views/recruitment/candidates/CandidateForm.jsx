@@ -5,50 +5,52 @@ import {
   CButton,
   CCol,
   CRow,
-  CBadge,
   CCard,
   CCardBody,
-  CCardText,
   CCardHeader,
   CButtonGroup,
   CFormCheck,
+  CSpinner,
 } from '@coreui/react'
 import { useNavigate, useParams } from 'react-router-dom'
 import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
+import ToastNotification from '../../../components/ToasterNotification.jsx'
 
 import CIcon from '@coreui/icons-react'
 import { cilTrash } from '@coreui/icons'
 import { CTooltip } from '@coreui/react'
 
+import apiService from '../../../service/apiService'
+
 const CandidateForm = ({ mode, candidateData }) => {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [city, setCity] = useState('')
-  const [phone, setPhone] = useState('');
+  const [location, setLocation] = useState('')
+  const [phone, setPhone] = useState('')
   const [profileSummary, setProfileSummary] = useState('')
   const [experiences, setExperiences] = useState([
-    { position: '', company: '', startDate: null, endDate: null, description: '' },
+    { position: '', company: '', startDate: '', endDate: '', description: '' },
   ])
-  const [validation, setValidation] = useState({})
-  const [inputMode, setInputMode] = useState('manual') // Track selected input mode
+  const [loading, setLoading] = useState(false)
+  const [inputMode, setInputMode] = useState('manual')
+  const [toastDeets, setToastDeets] = useState({})
+
   const navigate = useNavigate()
 
   useEffect(() => {
     if (mode === 'edit' && candidateData) {
-      setName(candidateData.name)
-      setEmail(candidateData.email)
-      setCity(candidateData.city)
-      setPhone(candidateData.phone)
-      setProfileSummary(candidateData.profileSummary)
+      setName(candidateData.name || '')
+      setEmail(candidateData.email || candidateData.externalEmail || '')
+      setLocation(candidateData.location || '')
+      setPhone(candidateData.phone || '')
+      setProfileSummary(candidateData.profileSummary || '')
       setExperiences(
-        candidateData.experiences || [
-          { position: '', company: '', startDate: null, endDate: null, description: '' },
-        ],
+        candidateData.experiences?.length
+          ? candidateData.experiences
+          : [{ position: '', company: '', startDate: '', endDate: '', description: '' }],
       )
     }
-
-    console.log(experiences)
   }, [mode, candidateData])
 
   const handleExperienceChange = (index, field, value) => {
@@ -61,7 +63,7 @@ const CandidateForm = ({ mode, candidateData }) => {
   const addExperience = () => {
     setExperiences([
       ...experiences,
-      { position: '', company: '', startDate: null, endDate: null, description: '' },
+      { position: '', company: '', startDate: '', endDate: '', description: '' },
     ])
   }
 
@@ -70,104 +72,117 @@ const CandidateForm = ({ mode, candidateData }) => {
     setExperiences(updatedExperiences)
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    const candidate = { name, email, city, profileSummary, experiences }
+    setLoading(true)
+    const candidate = { name, email, location: location, phone, profileSummary, experiences }
 
-    const newValidation = {}
-    if (!name) newValidation.name = 'Name is required'
-    if (!email) newValidation.email = 'Email is required'
-    if (!city) newValidation.city = 'City is required'
-    if (!phone) newValidation.phone = 'Phone is required'
-
-    setValidation(newValidation)
-
-    if (Object.keys(newValidation).length === 0) {
+    try {
       if (mode === 'add') {
         // Call API to add candidate
+        await apiService.post('/candidates', candidate)
+        setToastDeets({
+          type: 'success',
+          message: 'Candidate added succesfully',
+          title: 'Add Candidate',
+        })
       } else {
         // Call API to update candidate
+        await apiService.put('/candidates/' + candidateData.id, candidate)
+        setToastDeets({
+          type: 'success',
+          message: 'Candidate updated succesfully',
+          title: 'Edit Candidate',
+        })
       }
-      navigate('/candidates') // Redirect after submit
+      //navigate('/candidates') // Redirect after submit
+    } catch (error) {
+        console.log(error)
+      setToastDeets({
+        type: 'danger',
+        message: 'An error occurred: ' + error?.response?.data?.message || error.message,
+        title: 'Candidates',
+      })
+    } finally {
+      setLoading(false)
     }
   }
 
   return (
-    <CForm onSubmit={handleSubmit}>
-      <CCard>
-        <CCardHeader as="h5" className="text-center">
-          {mode === 'add' ? 'Add Candidate' : 'Edit Candidate'}
-        </CCardHeader>
+    <>
+      {' '}
+      <CForm onSubmit={handleSubmit}>
+        <CCard>
+          <CCardHeader as="h5" className="text-center">
+            {mode === 'add' ? 'Add Candidate' : 'Edit Candidate'}
+          </CCardHeader>
 
-        <CCardBody className="mx-3">
-          <CRow className="mb-3">
-            <CCol>
-              <CFormInput
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Name"
-                invalid={!!validation.name}
-              />
-              {validation.name && <div className="invalid-feedback">{validation.name}</div>}
-            </CCol>
-            <CCol>
-              <CFormInput
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email"
-                invalid={!!validation.email}
-              />
-              {validation.email && <div className="invalid-feedback">{validation.email}</div>}
-            </CCol>
-            
-          </CRow>
+          <CCardBody className="mx-3">
+            <CRow className="mb-3">
+              <CCol>
+                <CFormInput
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Name"
+                  label="Name"
+                  required
+                />
+              </CCol>
+              <CCol>
+                <CFormInput
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email"
+                  label="Email"
+                  required
+                />
+              </CCol>
+            </CRow>
 
-          <CRow className="mb-3">
-          <CCol>
-              <CFormInput
-                type="text"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="Phone"
-                invalid={!!validation.phone}
-              />
-              {validation.phone && <div className="invalid-feedback">{validation.phone}</div>}
-            </CCol>
-            <CCol>
-              <CFormInput
-                type="text"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                placeholder="City"
-                invalid={!!validation.city}
-              />
-              {validation.city && <div className="invalid-feedback">{validation.city}</div>}
-            </CCol>
-          </CRow>
+            <CRow className="mb-3">
+              <CCol>
+                <CFormInput
+                  type="text"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="Phone"
+                  label="Phone"
+                  required
+                />
+              </CCol>
+              <CCol>
+                <CFormInput
+                  type="text"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="Location"
+                  label="Location"
+                  required
+                />
+              </CCol>
+            </CRow>
 
-          <CCard>
-            <CCardHeader as="h5" className="text-center">
-              Profile Summary
-            </CCardHeader>
-            <CCardBody>
-              {' '}
-              <CRow className="mb-3">
-                <CCol>
-                  <h5>Profile Summary</h5>
-                  <ReactQuill
-                    value={profileSummary}
-                    onChange={setProfileSummary}
-                    placeholder="Profile Summary"
-                  />
-                </CCol>
-              </CRow>
-            </CCardBody>
-          </CCard>
+            <CCard>
+              <CCardHeader as="h5" className="text-center">
+                Profile Summary
+              </CCardHeader>
+              <CCardBody>
+                <CRow className="mb-3">
+                  <CCol>
+                    <h5>Profile Summary</h5>
+                    <ReactQuill
+                      value={profileSummary}
+                      onChange={setProfileSummary}
+                      placeholder="Profile Summary"
+                    />
+                  </CCol>
+                </CRow>
+              </CCardBody>
+            </CCard>
 
-
-            <CCard className='my-3'>
+            <CCard className="my-3">
               <CCardHeader as="h5" className="text-center">
                 Experience
               </CCardHeader>
@@ -213,6 +228,8 @@ const CandidateForm = ({ mode, candidateData }) => {
                                 handleExperienceChange(index, 'position', e.target.value)
                               }
                               placeholder="Position Title"
+                              label="Position Title"
+                              required
                             />
                           </CCol>
                           <CCol>
@@ -223,6 +240,8 @@ const CandidateForm = ({ mode, candidateData }) => {
                                 handleExperienceChange(index, 'company', e.target.value)
                               }
                               placeholder="Company"
+                              label="Company"
+                              required
                             />
                           </CCol>
                         </CRow>
@@ -235,7 +254,7 @@ const CandidateForm = ({ mode, candidateData }) => {
                               onChange={(e) =>
                                 handleExperienceChange(index, 'startDate', e.target.value)
                               }
-                              placeholder="Start Date"
+                              required
                             />
                           </CCol>
                           <CCol>
@@ -246,7 +265,7 @@ const CandidateForm = ({ mode, candidateData }) => {
                               onChange={(e) =>
                                 handleExperienceChange(index, 'endDate', e.target.value)
                               }
-                              placeholder="End Date"
+                              required
                             />
                           </CCol>
                         </CRow>
@@ -284,26 +303,33 @@ const CandidateForm = ({ mode, candidateData }) => {
               ) : (
                 <CCardBody className="mx-5">
                   <CRow className="mb-3">
-                    <CFormInput type="file" accept=".pdf, .doc, .docx" />
+                    <CFormInput type="file" accept=".pdf, .doc, .docx" required />
                   </CRow>
                 </CCardBody>
               )}
             </CCard>
+          </CCardBody>
+        </CCard>
 
-        </CCardBody>
-      </CCard>
-
-      <CRow className="my-3">
-        <CCol>
-          <CButton color="danger" onClick={() => navigate(-1)}>
-            Back
-          </CButton>
-          <CButton color="success" type="submit" className="mx-3">
-            {mode === 'add' ? 'Add' : 'Save'}
-          </CButton>
-        </CCol>
-      </CRow>
-    </CForm>
+        <CRow className="my-3">
+          <CCol>
+          <CButton color="danger" onClick={() => navigate(-1)} className="me-2">
+                  Back
+                </CButton>
+            <CButton type="submit" color="primary" className="me-2">
+              {loading ? (
+                <CSpinner size="sm" />
+              ) : mode === 'add' ? (
+                'Add Candidate'
+              ) : (
+                'Update Candidate'
+              )}
+            </CButton>
+          </CCol>
+        </CRow>
+      </CForm>
+      <ToastNotification deets={toastDeets} />
+    </>
   )
 }
 
@@ -317,24 +343,8 @@ const EditCandidatePage = () => {
 
   useEffect(() => {
     const fetchCandidate = async () => {
-      // Mock data for testing
-      const data = {
-        name: 'John Doe',
-        email: 'johndoe@example.com',
-        city: 'New York',
-        phone: '192 168 222 19',
-        profileSummary: 'Experienced software engineer...',
-        experiences: [
-          {
-            position: 'Software Engineer',
-            company: 'Tech Corp',
-            startDate: new Date('2020-01-01').toISOString().slice(0, 10),
-            endDate: new Date('2021-12-31').toISOString().slice(0, 10),
-            description: 'Developed web applications...',
-          },
-        ],
-      }
-      setCandidateData(data)
+      const response = await apiService.get('/candidates/' + id)
+      setCandidateData(response)
     }
     fetchCandidate()
   }, [id])

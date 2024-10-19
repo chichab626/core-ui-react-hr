@@ -84,7 +84,7 @@ const JobForm = ({ mode, jobData }) => {
       console.error(error)
       setToastDeets({
         type: 'danger',
-        message: 'An error occurred while adding the job',
+        message: 'An error occurred: ' + error?.response?.data?.message,
         title: 'Add Job',
       })
     }

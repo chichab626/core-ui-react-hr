@@ -1,7 +1,8 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { CFormInput } from '@coreui/react'
 
 const SalaryInput = ({ value, onChange, readOnly, validationError, label }) => {
+    
   // Formatting the currency input
   const formatCurrency = (value) => {
     const numericValue = String(value).replace(/[^0-9]/g, '')
@@ -12,6 +13,10 @@ const SalaryInput = ({ value, onChange, readOnly, validationError, label }) => {
   }
 
   const [formattedValue, setFormattedValue] = useState(formatCurrency(value))
+
+  useEffect(() => {
+    setFormattedValue(formatCurrency(value))
+  }, [value])
 
 
   // Handle changes to the input value

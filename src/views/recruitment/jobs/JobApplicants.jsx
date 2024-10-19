@@ -34,6 +34,9 @@ import {
 } from '@coreui/react'
 import { cilCalendar } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
+import apiService from '../../../service/apiService'
+import ToastNotification from '../../../components/ToasterNotification.jsx'
+import SalaryInput from '../../../components/SalaryInput'
 
 const JobApplicants = ({ jobData }) => {
   const [addedApplicants, setAddedApplicants] = useState([])
@@ -84,7 +87,7 @@ const JobApplicants = ({ jobData }) => {
       minute: 'numeric', // Minute
       hour12: true, // 12-hour format
     }
-  
+
     return new Intl.DateTimeFormat('en-US', options).format(new Date(dateString))
   }
   // END these are for the interview button in Job Applicants tab
@@ -101,12 +104,9 @@ const JobApplicants = ({ jobData }) => {
 
     const fetchApplicants = async () => {
       try {
-        const response = await fetch('https://jsonplaceholder.typicode.com/users')
-        if (!response.ok) {
-          throw new Error('Failed to fetch applicants')
-        }
-        const data = await response.json()
-        const formattedData = data.map((user) => ({
+        const response = await apiService.get('/candidates/')
+
+        const formattedData = response.map((user) => ({
           id: user.id,
           name: user.name,
           email: user.email,
@@ -121,6 +121,10 @@ const JobApplicants = ({ jobData }) => {
 
     fetchApplicants()
   }, [])
+
+  const bulkSaveChanges = () => {
+
+  }
 
   // Transfer selected added applicants back to available applicants
   const bulkRemoveApplicants = () => {
@@ -190,16 +194,18 @@ const JobApplicants = ({ jobData }) => {
             <CCardBody>
               <CRow className="col-12 mx-auto">
                 <CCol>
-                  <CFormLabel>Open Positions</CFormLabel>
-                  <CFormInput value={openPositions} contentEditable="false" />
+                  <CFormInput
+                    value={openPositions}
+                    contentEditable="false"
+                    label="Open Positions"
+                  />
                 </CCol>
                 <CCol>
-                  <CFormLabel>Salary</CFormLabel>
-                  <CFormInput value={salary} contentEditable="false" />
+                  <SalaryInput label="Salary" value={salary} readOnly={true} required />
                 </CCol>
                 <CCol>
-                  <CFormLabel>Location</CFormLabel>
-                  <CFormInput value={location} contentEditable="false" />
+                  <CFormLabel></CFormLabel>
+                  <CFormInput label="Location" value={location} contentEditable="false" />
                 </CCol>
               </CRow>
             </CCardBody>
@@ -327,128 +333,139 @@ const JobApplicants = ({ jobData }) => {
               </CCard>
             </CTabPanel>
             <CTabPanel className="py-3" aria-labelledby="profile-tab-pane" itemKey={2}>
-            <CCard>
-      <CCardHeader as="h5" className="text-center">
-        {/* Job Applicants */}
-      </CCardHeader>
+              <CCard>
+                <CCardHeader as="h5" className="text-center">
+                  {/* Job Applicants */}
+                </CCardHeader>
 
-      <CCardBody>
-        <CRow className="mx-2">
-          <CFormInput
-            type="text"
-            placeholder="Search by name or email"
-            value={applicantQuery}
-            onChange={(e) => setApplicantQuery(e.target.value)} // Update search query state
-            className="mb-3"
-          />
-        </CRow>
-        <CRow>
-          <CTable hover>
-            <CTableHead>
-              <CTableRow>
-                <CTableHeaderCell>
-                  <CFormCheck
-                    checked={selectedAdded.length === addedApplicants.length && addedApplicants.length > 0}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedAdded(addedApplicants.map((applicant) => applicant.id))
-                      } else {
-                        setSelectedAdded([])
-                      }
-                    }}
-                  />
-                </CTableHeaderCell>
-                <CTableHeaderCell>Name</CTableHeaderCell>
-                <CTableHeaderCell>Email</CTableHeaderCell>
-                <CTableHeaderCell>Interview</CTableHeaderCell> {/* New Interviews Column */}
-              </CTableRow>
-            </CTableHead>
-            <CTableBody>
-              {addedApplicants.length === 0 ? (
-                <CTableRow>
-                  <CTableDataCell colSpan={4}>
-                    No applicants yet. <br />
-                    Add applicants for this job from the available Candidates.
-                  </CTableDataCell>
-                </CTableRow>
-              ) : (
-                paginatedAddedApplicants.map((applicant) => (
-                  <CTableRow key={applicant.id}>
-                    <CTableDataCell>
-                      <CFormCheck
-                        checked={selectedAdded.includes(applicant.id)}
-                        onChange={() => toggleSelection(applicant.id, selectedAdded, setSelectedAdded)}
-                      />
-                    </CTableDataCell>
-                    <CTableDataCell>{applicant.name}</CTableDataCell>
-                    <CTableDataCell>{applicant.email}</CTableDataCell>
-                    <CTableDataCell>
-                      {applicant.nextInterview ? (
-                        // Display interview date
-                        // new Date(applicant.nextInterview).toLocaleDateString()
-                        formatDate(applicant.nextInterview)
-                      ) : (
-                        // Show calendar icon if no interview is scheduled
-                        <CButton color="primary" size="sm" onClick={() => openModal(applicant)}>
-                          <CIcon icon={cilCalendar} />
-                        </CButton>
+                <CCardBody>
+                  <CRow className="mx-2">
+                    <CFormInput
+                      type="text"
+                      placeholder="Search by name or email"
+                      value={applicantQuery}
+                      onChange={(e) => setApplicantQuery(e.target.value)} // Update search query state
+                      className="mb-3"
+                    />
+                  </CRow>
+                  <CRow>
+                    <CTable hover>
+                      <CTableHead>
+                        <CTableRow>
+                          <CTableHeaderCell>
+                            <CFormCheck
+                              checked={
+                                selectedAdded.length === addedApplicants.length &&
+                                addedApplicants.length > 0
+                              }
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedAdded(addedApplicants.map((applicant) => applicant.id))
+                                } else {
+                                  setSelectedAdded([])
+                                }
+                              }}
+                            />
+                          </CTableHeaderCell>
+                          <CTableHeaderCell>Name</CTableHeaderCell>
+                          <CTableHeaderCell>Email</CTableHeaderCell>
+                          <CTableHeaderCell>Interview</CTableHeaderCell>{' '}
+                          {/* New Interviews Column */}
+                        </CTableRow>
+                      </CTableHead>
+                      <CTableBody>
+                        {addedApplicants.length === 0 ? (
+                          <CTableRow>
+                            <CTableDataCell colSpan={4}>
+                              No applicants yet. <br />
+                              Add applicants for this job from the available Candidates.
+                            </CTableDataCell>
+                          </CTableRow>
+                        ) : (
+                          paginatedAddedApplicants.map((applicant) => (
+                            <CTableRow key={applicant.id}>
+                              <CTableDataCell>
+                                <CFormCheck
+                                  checked={selectedAdded.includes(applicant.id)}
+                                  onChange={() =>
+                                    toggleSelection(applicant.id, selectedAdded, setSelectedAdded)
+                                  }
+                                />
+                              </CTableDataCell>
+                              <CTableDataCell>{applicant.name}</CTableDataCell>
+                              <CTableDataCell>{applicant.email}</CTableDataCell>
+                              <CTableDataCell>
+                                {applicant.nextInterview ? (
+                                  // Display interview date
+                                  // new Date(applicant.nextInterview).toLocaleDateString()
+                                  formatDate(applicant.nextInterview)
+                                ) : (
+                                  // Show calendar icon if no interview is scheduled
+                                  <CButton
+                                    color="primary"
+                                    size="sm"
+                                    onClick={() => openModal(applicant)}
+                                  >
+                                    <CIcon icon={cilCalendar} />
+                                  </CButton>
+                                )}
+                              </CTableDataCell>
+                            </CTableRow>
+                          ))
+                        )}
+                      </CTableBody>
+                    </CTable>
+                  </CRow>
+                  <CRow>
+                    <CCol>
+                      {addedApplicants.length > itemsPerPage && (
+                        <CPagination aria-label="Added applicants pagination">
+                          <CPaginationItem
+                            onClick={() => setAddedPage(addedPage - 1)}
+                            disabled={addedPage === 1}
+                          >
+                            Previous
+                          </CPaginationItem>
+                          <CPaginationItem
+                            onClick={() => setAddedPage(addedPage + 1)}
+                            disabled={addedPage * itemsPerPage >= addedApplicants.length}
+                          >
+                            Next
+                          </CPaginationItem>
+                        </CPagination>
                       )}
-                    </CTableDataCell>
-                  </CTableRow>
-                ))
-              )}
-            </CTableBody>
-          </CTable>
-        </CRow>
-        <CRow>
-          <CCol>
-            {addedApplicants.length > itemsPerPage && (
-              <CPagination aria-label="Added applicants pagination">
-                <CPaginationItem onClick={() => setAddedPage(addedPage - 1)} disabled={addedPage === 1}>
-                  Previous
-                </CPaginationItem>
-                <CPaginationItem
-                  onClick={() => setAddedPage(addedPage + 1)}
-                  disabled={addedPage * itemsPerPage >= addedApplicants.length}
-                >
-                  Next
-                </CPaginationItem>
-              </CPagination>
-            )}
-          </CCol>
-          <CCol>
-            <CButtonGroup>
-              <CButton color="info" onClick={bulkHireApplicants}>
-                Hire Selected
-              </CButton>
-              <CButton color="danger" onClick={bulkRemoveApplicants}>
-                Remove Selected
-              </CButton>
-            </CButtonGroup>
-          </CCol>
-        </CRow>
-
-        {/* Modal for Date Input */}
-        <CModal visible={showModal} onClose={() => setShowModal(false)}>
-          <CModalHeader>Schedule Interview</CModalHeader>
-          <CModalBody>
-            <CFormInput
-              type="datetime-local"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)} // Set selected date
-            />
-          </CModalBody>
-          <CModalFooter>
-            <CButton color="primary" onClick={saveDate}>
-              Save Date
-            </CButton>
-            <CButton color="secondary" onClick={() => setShowModal(false)}>
-              Cancel
-            </CButton>
-          </CModalFooter>
-        </CModal>
-      </CCardBody>
-    </CCard>
+                    </CCol>
+                    <CCol>
+                      <CButtonGroup>
+                        <CButton color="info" onClick={bulkHireApplicants}>
+                          Hire Selected
+                        </CButton>
+                        <CButton color="danger" onClick={bulkRemoveApplicants}>
+                          Remove Selected
+                        </CButton>
+                      </CButtonGroup>
+                    </CCol>
+                  </CRow>
+                  <CModal visible={showModal} onClose={() => setShowModal(false)}>
+                    <CModalHeader>Schedule Interview</CModalHeader>
+                    <CModalBody>
+                      <CFormInput
+                        type="datetime-local"
+                        value={selectedDate}
+                        onChange={(e) => setSelectedDate(e.target.value)} // Set selected date
+                      />
+                    </CModalBody>
+                    <CModalFooter>
+                      <CButton color="primary" onClick={saveDate}>
+                        Save Date
+                      </CButton>
+                      <CButton color="secondary" onClick={() => setShowModal(false)}>
+                        Cancel
+                      </CButton>
+                    </CModalFooter>
+                  </CModal>
+                </CCardBody>
+              </CCard>
             </CTabPanel>
             <CTabPanel className="py-3" aria-labelledby="contact-tab-pane" itemKey={3}>
               <CCard>
@@ -484,13 +501,12 @@ const JobApplicants = ({ jobData }) => {
           </CTabContent>
         </CTabs>
       </CRow>
-
       <CRow className="my-3">
         <CCol>
           <CButton color="danger" onClick={() => navigate(-1)} className="me-2">
             Back
           </CButton>
-          <CButton color="primary" onClick={bulkRemoveApplicants}>
+          <CButton color="primary" onClick={() => bulkSaveChanges()}>
             Save Changes
           </CButton>
         </CCol>
@@ -502,23 +518,27 @@ const JobApplicants = ({ jobData }) => {
 const JobApplicantsPage = () => {
   const { id } = useParams()
   const [jobData, setJobData] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const fetchJob = async () => {
-      // Mock data for testing
-      const data = {
-        jobTitle: 'Pharmacist',
-        status: true,
-        datePosted: '2023-12-26',
-        location: 'Saint-Claude',
-        salary: 179240,
-        openPositions: 3,
-        jobDescription: 'High-level job description',
+      try {
+        setIsLoading(true)
+        const response = await apiService.get(`/job/${id}`)
+        setJobData(response)
+      } catch (error) {
+        console.error('Error fetching job data:', error)
+        // Handle error (e.g., show error message to user)
+      } finally {
+        setIsLoading(false)
       }
-      setJobData(data)
     }
     fetchJob()
   }, [id])
+
+  if (isLoading) {
+    return <CSpinner />
+  }
 
   return jobData ? <JobApplicants jobData={jobData} /> : <div>Loading...</div>
 }

@@ -10,6 +10,7 @@ import {
 import { useNavigate } from 'react-router-dom'; // Updated to useNavigate
 import { cilPen, cilTrash } from '@coreui/icons'; // Import CoreUI icons
 import CIcon from '@coreui/icons-react'; // Import the CIcon component
+import apiService from '../../../service/apiService'
 
 const Candidates = () => {
     const [data, setData] = useState([]);
@@ -24,9 +25,8 @@ const Candidates = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch('https://jsonplaceholder.typicode.com/users');
-                const result = await response.json();
-                setData(result);
+                const response = await apiService.get('/candidates/')
+                setData(response)
             } catch (error) {
                 console.error('Error fetching candidates:', error);
             }
@@ -37,10 +37,9 @@ const Candidates = () => {
     // Filter data based on search term
     const filteredData = data.filter(candidate =>
         candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        candidate.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        candidate.phone.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        candidate.address.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        candidate.company.catchPhrase.toLowerCase().includes(searchTerm.toLowerCase())
+        candidate.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        candidate.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        candidate.location?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     // Pagination logic
@@ -80,8 +79,6 @@ const Candidates = () => {
 
     return (
         <div>
-
-
             <CCard>
                 <CCardHeader as="h5" className="text-center">Candidates List</CCardHeader>
                 <CCardBody>
@@ -91,10 +88,10 @@ const Candidates = () => {
                 </CCardBody>
 
                 <CCardBody className='mx-3'>
-                    <CRow >
+                    <CRow>
                         <CFormInput
                             type="text"
-                            placeholder="Search by Name, Email, Phone, City, or Profile Summary"
+                            placeholder="Search by Name, Email, Phone, or Location"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="mb-3"
@@ -113,11 +110,8 @@ const Candidates = () => {
                                     <CTableHeaderCell onClick={() => handleSort('phone')}>
                                         Phone {sortColumn === 'phone' && (sortDirection === 'asc' ? '↑' : '↓')}
                                     </CTableHeaderCell>
-                                    <CTableHeaderCell onClick={() => handleSort('address.city')}>
-                                        City {sortColumn === 'address.city' && (sortDirection === 'asc' ? '↑' : '↓')}
-                                    </CTableHeaderCell>
-                                    <CTableHeaderCell onClick={() => handleSort('company.catchPhrase')}>
-                                        Profile Summary {sortColumn === 'company.catchPhrase' && (sortDirection === 'asc' ? '↑' : '↓')}
+                                    <CTableHeaderCell onClick={() => handleSort('location')}>
+                                        Location {sortColumn === 'location' && (sortDirection === 'asc' ? '↑' : '↓')}
                                     </CTableHeaderCell>
                                     <CTableHeaderCell>
                                         Actions
@@ -127,12 +121,11 @@ const Candidates = () => {
                             <CTableBody>
                                 {currentData.length > 0 ? (
                                     currentData.map((candidate) => (
-                                        <CTableRow key={candidate.id} onClick={() => handleRowClick(candidate.id)} style={{ cursor: 'pointer' }}>
+                                        <CTableRow key={candidate.id} style={{ cursor: 'pointer' }}>
                                             <CTableDataCell>{candidate.name}</CTableDataCell>
-                                            <CTableDataCell>{candidate.email}</CTableDataCell>
+                                            <CTableDataCell>{candidate.externalEmail}</CTableDataCell>
                                             <CTableDataCell>{candidate.phone}</CTableDataCell>
-                                            <CTableDataCell>{candidate.address.city}</CTableDataCell>
-                                            <CTableDataCell>{candidate.company.catchPhrase}</CTableDataCell>
+                                            <CTableDataCell>{candidate.location}</CTableDataCell>
                                             <CTableDataCell>
                                                 <CButton
                                                     color="info"
@@ -151,7 +144,7 @@ const Candidates = () => {
                                     ))
                                 ) : (
                                     <CTableRow>
-                                        <CTableDataCell colSpan="6" className="text-center">
+                                        <CTableDataCell colSpan="5" className="text-center">
                                             No Candidates Found
                                         </CTableDataCell>
                                     </CTableRow>
@@ -188,7 +181,6 @@ const Candidates = () => {
                     <CRow>
                         <div className="d-grid gap-2 col-6 mx-auto">
                             <CButton color="primary" onClick={() => handleAddClick()}>Add Candidate</CButton>
-
                         </div>
                     </CRow>
                 </CCardBody>
