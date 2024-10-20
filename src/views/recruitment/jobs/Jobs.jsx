@@ -20,7 +20,7 @@ import {
 import { useNavigate } from 'react-router-dom'
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilTrash } from '@coreui/icons'
-import apiService from '../../../service/apiService.js';
+import apiService from '../../../service/apiService.js'
 
 const Jobs = () => {
   const [data, setData] = useState([])
@@ -32,13 +32,14 @@ const Jobs = () => {
 
   useEffect(() => {
     const fetchJobs = async () => {
-        try {
-          const response = await apiService.get('/job/')
-          setData(response)
-        } catch (error) {
-          console.error('Error fetching jobs:', error)
-        }
+      try {
+        const response = await apiService.get('/job?applicants=true')
+        setData(response)
+        console.log(response)
+      } catch (error) {
+        console.error('Error fetching jobs:', error)
       }
+    }
     fetchJobs()
   }, [])
 
@@ -55,7 +56,7 @@ const Jobs = () => {
       (row) =>
         row.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         row.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        row.salary.toString().includes(searchTerm)
+        row.salary.toString().includes(searchTerm),
     )
     setData(filteredData)
     setCurrentPage(1) // Reset to the first page on search
@@ -143,8 +144,12 @@ const Jobs = () => {
                           onClick={() => handleApplicantClick(row.id)}
                         >
                           Applicants
-                          <CBadge color="success" position="top-start" shape="rounded-pill">
-                            {parseInt(Math.random() * 100)}
+                          <CBadge
+                            color={row.applicantCount > 0 ? 'success' : 'danger'}
+                            position="top-start"
+                            shape="rounded-pill"
+                          >
+                            {row.applicantCount}
                           </CBadge>
                         </CButton>
 

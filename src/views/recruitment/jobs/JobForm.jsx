@@ -73,11 +73,13 @@ const JobForm = ({ mode, jobData }) => {
 
       if (mode === 'add') {
         await apiService.post('/job', newJob)
+      } else {
+        await apiService.put(`/job/${jobData.id}`, newJob)
       }
 
       setToastDeets({
         type: 'success',
-        message: 'Job added succesfully',
+        message: `Job ${mode === 'add' ? "added" : "edited"} succesfully`,
         title: 'Add Job',
       })
     } catch (error) {
