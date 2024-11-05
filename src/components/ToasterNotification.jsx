@@ -22,28 +22,6 @@ const ToastNotification = ({deets}) => {
     }
   }
 
-  const exampleToast = (
-    <CToast>
-      <CToastHeader closeButton>
-        <svg
-          className="rounded me-2"
-          width="20"
-          height="20"
-          xmlns="http://www.w3.org/2000/svg"
-          preserveAspectRatio="xMidYMid slice"
-          focusable="false"
-          role="img"
-        >
-          {generateIcon('success')}
-        </svg>
-        <div className="fw-bold me-auto">dsf</div>
-        
-      </CToastHeader>
-      <CToastBody>Hello, world! This is a toast message.</CToastBody>
-    </CToast>
-  )
-
-  const sample = {type:'danger', message:'messesfs', title:'title'}
   const createToast = ({type, message, title}) => (
     <CToast color={type}>
       <CToastHeader closeButton>
@@ -66,7 +44,8 @@ const ToastNotification = ({deets}) => {
   )
 
   useEffect(() => {
-    if (deets) {
+    if (deets && Object.keys(deets).length > 0) {
+        console.log('trigger toast')
         addToast(createToast(deets))
     }
   }, [deets]);
@@ -77,7 +56,7 @@ const ToastNotification = ({deets}) => {
         {/* <CButton color="primary" onClick={() => addToast(createToast(sample))}>
           Send a toast
         </CButton> */}
-        <CToaster className="p-3" placement="top-end" push={toast} ref={toaster} />
+        <CToaster className="p-3" placement="bottom-end" push={toast} ref={toaster} />
       </div>
 
     </>

@@ -35,9 +35,10 @@ import {
   CDropdown,
   CDropdownToggle,
   CDropdownMenu,
-  CBadge
+  CBadge,
+  CTooltip,
 } from '@coreui/react'
-import { cilCalendar, cilCheckCircle, cilPencil } from '@coreui/icons'
+import { cilCalendar, cilCheckCircle, cilPencil, cilThumbUp, cilNoteAdd } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import apiService from '../../../service/apiService'
 import ToastNotification from '../../../components/ToasterNotification.jsx'
@@ -82,7 +83,7 @@ const JobApplicants = ({ jobData }) => {
         selectedApplicant.nextInterview = selectedDate // Update the nextInterview field
         apiService.put('/applicants/' + selectedApplicant.id, selectedApplicant)
       } catch (err) {
-        setError(err.message)
+        console.log(err.message)
       } finally {
         setLoading(false)
       }
@@ -100,7 +101,7 @@ const JobApplicants = ({ jobData }) => {
       setSelectedApplicant(applicant)
       setSelectedDate(applicant.nextInterview)
     } catch (err) {
-      setError(err.message)
+      console.log(err.message)
     } finally {
       setLoading(false)
     }
@@ -172,7 +173,7 @@ const JobApplicants = ({ jobData }) => {
           }))
         setAvailableApplicants(availCandidates)
       } catch (err) {
-        setError(err.message)
+        console.log(err.message)
       } finally {
         setLoading(false)
       }
@@ -216,48 +217,71 @@ const JobApplicants = ({ jobData }) => {
     }
   }
 
+  const updateStatus = async (applicant, status) => {
+    try {
+      applicant.interviewStatus = status
+      apiService.put('/applicants/' + applicant.id, applicant)
+      setSelectedApplicant(applicant)
+      if (status == "Job Offer") {
+        setToastDeets({
+            type: 'success',
+            message: `A job offer letter will be sent to applicant at ${applicant.email}`,
+            title: 'Update Status',
+          })
+      }
+    } catch (err) {
+        setToastDeets({
+            type: 'danger',
+            message: 'An error occurred: ' + error?.response?.data?.message || error.message,
+            title: 'Update Status',
+          })
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const bulkUpdateStatus = async (status) => {
     const selectedApplicants = addedApplicants.filter((applicant) =>
-        selectedAdded.includes(applicant.id),
+      selectedAdded.includes(applicant.id),
+    )
+    // Prepare the payload for the API request
+    const payload = selectedApplicants.map((applicant) => ({
+      candidateId: applicant.candidateId,
+      jobId: jobData.id,
+      interviewStatus: status,
+    }))
+
+    try {
+      // Make the API call to bulk upsert
+      const result = await apiService.post('applicants/bulk-upsert', payload)
+
+      let mergedApplicants = result.data?.map((applicant) => {
+        return mergeApplicants(applicant.jobApplicant, selectedApplicants)
+      })
+
+      // If the API call is successful, update the UI state
+      setAddedApplicants((prev) =>
+        prev.map((applicant) =>
+          selectedAdded.includes(applicant.id)
+            ? { ...applicant, interviewStatus: status }
+            : applicant,
+        ),
       )
-      // Prepare the payload for the API request
-      const payload = selectedApplicants.map((applicant) => ({
-        candidateId: applicant.candidateId,
-        jobId: jobData.id,
-        interviewStatus: status,
-      }))
-  
-      try {
-        // Make the API call to bulk upsert
-        const result = await apiService.post('applicants/bulk-upsert', payload)
-  
-        let mergedApplicants = result.data?.map((applicant) => {
-          return mergeApplicants(applicant.jobApplicant, selectedApplicants)
-        })
-  
-        // If the API call is successful, update the UI state
-        setAddedApplicants((prev) =>
-          prev.map((applicant) =>
-            selectedAdded.includes(applicant.id)
-              ? { ...applicant, interviewStatus: status }
-              : applicant,
-          ),
-        )
-        setSelectedAdded([])
-  
-        setToastDeets({
-          type: 'success',
-          message: `Selected applicants set to: "${status}"`,
-          title: 'Job Applicants',
-        })
-      } catch (error) {
-        console.error('Failed to update applicants:', error)
-        setToastDeets({
-          type: 'danger',
-          message: 'An error occurred: ' + error?.response?.data?.message || error.message,
-          title: 'Job Applicants',
-        })
-      }
+      setSelectedAdded([])
+
+      setToastDeets({
+        type: 'success',
+        message: `Selected applicant/s set to: "${status}"`,
+        title: 'Job Applicants',
+      })
+    } catch (error) {
+      console.error('Failed to update applicants:', error)
+      setToastDeets({
+        type: 'danger',
+        message: 'An error occurred: ' + error?.response?.data?.message || error.message,
+        title: 'Job Applicants',
+      })
+    }
   }
   // Reject selected added applicants back to available applicants
   const bulkRejectApplicants = async () => {
@@ -323,7 +347,6 @@ const JobApplicants = ({ jobData }) => {
         return mergeApplicants(applicant.jobApplicant, newApplicants)
       })
 
-      console.log(mergedApplicants)
       // If the API call is successful, update the UI state
       setAddedApplicants((prev) => [...prev, ...mergedApplicants])
       setAvailableApplicants((prev) =>
@@ -362,11 +385,10 @@ const JobApplicants = ({ jobData }) => {
       : jobApplicant // Return the original job applicant if no match is found
   }
 
-  const bulkHireApplicants = async () => {
-    // Filter hired applicants based on selectedAdded
-    const hired = addedApplicants.filter((applicant) => selectedAdded.includes(applicant.id))
+  const bulkHireApplicants = async (applicant) => {
+    const hired = [applicant]
     // Check if there are enough open positions
-    if (hired.length > openPositions) {
+    if (openPositions < 1) {
       setToastDeets({
         type: 'danger',
         message: 'Cannot hire more applicants than available open positions.',
@@ -399,7 +421,7 @@ const JobApplicants = ({ jobData }) => {
       // Update the state
       setHiredApplicants((prev) => [...prev, ...mergedApplicants])
       setAddedApplicants((prev) =>
-        prev.filter((applicant) => !selectedAdded.includes(applicant.id)),
+        prev.filter((applicant) => ![hired[0].id].includes(applicant.id)),
       )
       setSelectedAdded([])
 
@@ -412,15 +434,15 @@ const JobApplicants = ({ jobData }) => {
 
       setToastDeets({
         type: 'success',
-        message: 'Selected candidates hired successfully.',
-        title: 'Job Applicants',
+        message: 'Selected candidate hired successfully.',
+        title: 'Hire Applicant',
       })
     } catch (error) {
       console.error('Failed to hire applicants:', error)
       setToastDeets({
         type: 'danger',
         message: 'An error occurred: ' + error?.response?.data?.message || error.message,
-        title: 'Job Applicants',
+        title: 'Hire Applicant',
       })
     }
   }
@@ -503,22 +525,22 @@ const JobApplicants = ({ jobData }) => {
         </CRow>
         <CRow className="my-3">
           <CTabs activeItemKey={2}>
-          <CTabList variant="tabs" layout="justified">
-  <CTab aria-controls="home-tab-pane" itemKey={1}>
-    Add Applicants
-  </CTab>
-  <CTab aria-controls="profile-tab-pane" itemKey={2}>
-    Current Applicants
-  </CTab>
-  <CTab aria-controls="contact-tab-pane" itemKey={3}>
-    Hired Applicants
-    {hiredApplicants.length > 0 && (
-      <CBadge color="success" className="ms-2">
-        {hiredApplicants.length}
-      </CBadge>
-    )}
-  </CTab>
-</CTabList>
+            <CTabList variant="tabs" layout="justified">
+              <CTab aria-controls="home-tab-pane" itemKey={1}>
+                Add Applicants
+              </CTab>
+              <CTab aria-controls="profile-tab-pane" itemKey={2}>
+                Current Applicants
+              </CTab>
+              <CTab aria-controls="contact-tab-pane" itemKey={3}>
+                Hired Applicants
+                {hiredApplicants.length > 0 && (
+                  <CBadge color="success" className="ms-2">
+                    {hiredApplicants.length}
+                  </CBadge>
+                )}
+              </CTab>
+            </CTabList>
             <CTabContent>
               <CTabPanel className="py-3" aria-labelledby="home-tab-pane" itemKey={1}>
                 <CCard>
@@ -538,8 +560,6 @@ const JobApplicants = ({ jobData }) => {
                     <CRow>
                       {loading ? (
                         <CSpinner />
-                      ) : error ? (
-                        <p>{error}</p>
                       ) : (
                         <>
                           <CTable hover>
@@ -676,6 +696,7 @@ const JobApplicants = ({ jobData }) => {
                             <CTableHeaderCell>Email</CTableHeaderCell>
                             <CTableHeaderCell>Status</CTableHeaderCell>
                             <CTableHeaderCell>Next Interview</CTableHeaderCell>
+                            <CTableHeaderCell>Actions</CTableHeaderCell>
                           </CTableRow>
                         </CTableHead>
                         <CTableBody>
@@ -708,40 +729,71 @@ const JobApplicants = ({ jobData }) => {
                                   ) : applicant.nextInterview &&
                                     new Date(applicant.nextInterview) > new Date(1900, 1, 1) ? (
                                     <>
-                                      {/* Display formatted interview date */}
                                       {formatDate(applicant.nextInterview)}
 
                                       {/* Check if the interview date is in the past */}
                                       {new Date(applicant.nextInterview) < new Date() && (
-                                        <CButton
-                                          color="success"
-                                          size="sm"
-                                          className="ms-2"
-                                          onClick={() => markInterviewAsDone(applicant)}
-                                        >
-                                          <CIcon icon={cilCheckCircle} /> {/* Done icon */}
-                                        </CButton>
+                                        <CTooltip content="Done with Interview" placement="top">
+                                          <CButton
+                                            color="success"
+                                            size="sm"
+                                            className="ms-2"
+                                            onClick={() => markInterviewAsDone(applicant)}
+                                          >
+                                            <CIcon icon={cilCheckCircle} /> {/* Done icon */}
+                                          </CButton>
+                                        </CTooltip>
                                       )}
 
                                       {/* Edit button for changing interview date */}
-                                      <CButton
-                                        color="info"
-                                        size="sm"
-                                        className="ms-2"
-                                        onClick={() => openModal(applicant)} // Function to open edit modal
-                                      >
-                                        <CIcon icon={cilPencil} />
-                                      </CButton>
+                                      <CTooltip content="Change Date" placement="top">
+                                        <CButton
+                                          color="info"
+                                          size="sm"
+                                          className="ms-2"
+                                          onClick={() => openModal(applicant)} // Function to open edit modal
+                                        >
+                                          <CIcon icon={cilPencil} />
+                                        </CButton>
+                                      </CTooltip>
                                     </>
                                   ) : (
                                     // Show calendar icon if no interview is scheduled
-                                    <CButton
-                                      color="primary"
-                                      size="sm"
-                                      onClick={() => openModal(applicant)}
-                                    >
-                                      <CIcon icon={cilCalendar} />
-                                    </CButton>
+                                    <CTooltip content="Set next Interview" placement="top">
+                                      <CButton
+                                        color="primary"
+                                        size="sm"
+                                        onClick={() => openModal(applicant)}
+                                      >
+                                        <CIcon icon={cilCalendar} />
+                                      </CButton>
+                                    </CTooltip>
+                                  )}
+                                </CTableDataCell>
+                                <CTableDataCell>
+                                  {applicant.interviewStatus === 'Interviewed' ? (
+                                    // Display "no action available" if the interview status is "Interviewed"
+                                    <CTooltip content="Offer Job" placement="top">
+                                      <CButton
+                                        color="warning"
+                                        size="sm"
+                                        onClick={() => updateStatus(applicant, 'Job Offer')}
+                                      >
+                                        <CIcon icon={cilNoteAdd} />
+                                      </CButton>
+                                    </CTooltip>
+                                  ) : applicant.interviewStatus === 'Job Offer' ? (
+                                    <CTooltip content="Hire" placement="top">
+                                      <CButton
+                                        color="success"
+                                        size="sm"
+                                        onClick={() => bulkHireApplicants(applicant)}
+                                      >
+                                        <CIcon icon={cilThumbUp} />
+                                      </CButton>
+                                    </CTooltip>
+                                  ) : (
+                                    <span>No action available</span>
                                   )}
                                 </CTableDataCell>
                               </CTableRow>
@@ -771,23 +823,15 @@ const JobApplicants = ({ jobData }) => {
                       </CCol>
                       <CCol>
                         <CButtonGroup>
-                          <CButton color="info" onClick={bulkHireApplicants}>
-                            Hire Selected
-                          </CButton>
-
                           <CDropdown variant="btn-group">
-                            <CDropdownToggle color="info">More Actions</CDropdownToggle>
+                            <CDropdownToggle color="info">Bulk Actions</CDropdownToggle>
                             <CDropdownMenu>
-                            <CDropdownItem  onClick={() => bulkUpdateStatus('Job Offer')}>
-                                Offer Selected
-                              </CDropdownItem>
                               <CDropdownItem onClick={bulkRemoveApplicants}>
                                 Remove Selected
                               </CDropdownItem>
                               <CDropdownItem onClick={() => bulkUpdateStatus('Rejected')}>
                                 Reject Selected
                               </CDropdownItem>
-
                             </CDropdownMenu>
                           </CDropdown>
                         </CButtonGroup>

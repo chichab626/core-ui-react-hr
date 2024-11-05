@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   CContainer,
   CRow,
@@ -23,8 +23,8 @@ import { CIcon } from '@coreui/icons-react'
 import { cilPen } from '@coreui/icons'
 import StartOnboardingModal from './StartOnboardingModal'
 import { useNavigate } from 'react-router-dom'
-
-// Use useNavigate
+import ToastNotification from '../../components/ToasterNotification.jsx'
+import apiService from '../../service/apiService.js'
 
 const OnboardingPage = () => {
   const [searchQuery, setSearchQuery] = useState('')

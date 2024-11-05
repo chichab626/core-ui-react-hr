@@ -25,8 +25,8 @@ const UserPage = () => {
   const [name, setName] = useState('')
   const [jobTitle, setJobTitle] = useState('')
   const [location, setLocation] = useState('')
-  const [salary, setSalary] = useState('') // Read-only for employees
-  const [reportsTo, setReportsTo] = useState('') // Read-only for employees
+  const [salary, setSalary] = useState('') 
+  const [reportsTo, setReportsTo] = useState('') 
 
   const [toastDeets, setToastDeets] = useState({})
   const [loading, setLoading] = useState(false)
@@ -87,7 +87,7 @@ const UserPage = () => {
     }
 
     try {
-      await apiService.put('/users/me', updatedUser) // Assuming this endpoint exists
+      await apiService.put('/users/me', updatedUser)
       notify('success', 'Profile updated successfully', 'Success')
     } catch (error) {
       console.log(error)

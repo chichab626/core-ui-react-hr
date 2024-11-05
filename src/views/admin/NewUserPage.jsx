@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import Select from 'react-select'
 import {
   CForm,
@@ -11,24 +11,14 @@ import {
   CButton,
   CFormInput,
   CFormLabel,
-  CSpinner
+  CSpinner,
 } from '@coreui/react'
 import apiService from '../../service/apiService.js'
 import SalaryInput from '../../components/SalaryInput'
 import ToastNotification from '../../components/ToasterNotification.jsx'
 
 const NewUserPage = () => {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [role, setRole] = useState(null)
-  const [name, setName] = useState('')
-  const [jobTitle, setJobTitle] = useState('')
-  const [location, setLocation] = useState('')
-  const [salary, setSalary] = useState('') // Salary is optional
-
-  const [toastDeets, setToastDeets] = useState({})
-  const [loading, setLoading] = useState(false)
-  const navigate = useNavigate()
+  const location = useLocation()
 
   const roleOptions = [
     { value: 'HRManager', label: 'HR Manager' },
@@ -36,15 +26,26 @@ const NewUserPage = () => {
     { value: 'Administrator', label: 'Administrator' },
   ]
 
+  const data = location?.state?.response
+  const [email, setEmail] = useState('')
+  const [externalEmail, setExternalEmail] = useState(data?.candidate?.externalEmail || '')
+  const [password, setPassword] = useState('')
+  const [role, setRole] = useState(location?.state ? roleOptions[1] : null)
+  const [name, setName] = useState(data?.candidate?.name || '')
+  const [jobTitle, setJobTitle] = useState(data?.job?.title || '')
+  const [locationField, setLocationField] = useState(data?.candidate?.location || '')
+  const [salary, setSalary] = useState('')
+
+  const [toastDeets, setToastDeets] = useState({})
+  const [loading, setLoading] = useState(false)
+  const navigate = useNavigate()
 
   const handleRoleChange = (selectedRole) => {
     setRole(selectedRole)
-
   }
 
   const notify = (type, message, title) => {
-    //addToastCounter((prev) => prev + 1)
-    setToastDeets({type, message, title})
+    setToastDeets({ type, message, title })
   }
 
   const handleSubmit = async (e) => {
@@ -57,24 +58,38 @@ const NewUserPage = () => {
       ...(role.value === 'Employee' && {
         name,
         jobTitle,
-        location,
-        salary, // Optional field
+        location: locationField,
+        salary,
+        reportsTo: data?.job?.hiringManagerId,
+        externalEmail: data?.candidate?.externalEmail,
+        candidateId: data?.candidateId,
       }),
     }
 
     try {
-      const response = await apiService.post('/users', newUser) // Post to /users endpoint
-
+      const response = await apiService.post('/users', newUser)
       let successMessage = `Created successfully with User ID: ${response.user.id}`
       if (role.value === 'Employee') {
         successMessage = `Employee User created successfully. User Id ${response.user.id} Employee Id ${response.employee.id}`
       }
+
+      //   if (data && data.candidateId) {
+      //     // this is a redirect from candidates page. update the candidate to status = 'Employee'
+      //     const candidateId = data?.candidateId
+      //     await apiService.put(`/candidates/${candidateId}`, { status: 'Employee' })
+      //   }
+
       notify('success', successMessage, 'Create User')
     } catch (error) {
       console.log(error)
-      notify('danger', 'An error occurred while creating the user.', 'Create User Error')
+      notify(
+        'danger',
+        'An error occurred while creating the user: ' + +error?.response?.data?.message ||
+          error.message,
+        'Create User Error',
+      )
     } finally {
-        setLoading(false)
+      setLoading(false)
     }
   }
 
@@ -88,7 +103,7 @@ const NewUserPage = () => {
           <CCardBody className="mx-3">
             <CRow className="mb-3">
               <CCol>
-                <CFormLabel>Email</CFormLabel>
+                <CFormLabel>Company Email</CFormLabel>
                 <CFormInput
                   type="email"
                   name="email"
@@ -98,9 +113,6 @@ const NewUserPage = () => {
                   required
                 />
               </CCol>
-            </CRow>
-
-            <CRow className="mb-3">
               <CCol>
                 <CFormLabel>Password</CFormLabel>
                 <CFormInput
@@ -128,17 +140,16 @@ const NewUserPage = () => {
                     ...theme,
                     colors: {
                       ...theme.colors,
-                      primary25: '#495057', // Hover color for options
-                      primary: '#ced4da', // Border and active color
-                      neutral0: 'rgb(33 38 49)', // Dark background
-                      neutral80: '#fff', // Text color
+                      primary25: '#495057',
+                      primary: '#ced4da',
+                      neutral0: 'rgb(33 38 49)',
+                      neutral80: '#fff',
                     },
                   })}
                 />
               </CCol>
             </CRow>
 
-            {/* Additional Fields when Employee is selected */}
             {role && role.value === 'Employee' && (
               <>
                 <CRow className="mb-3">
@@ -153,9 +164,6 @@ const NewUserPage = () => {
                       required
                     />
                   </CCol>
-                </CRow>
-
-                <CRow className="mb-3">
                   <CCol>
                     <CFormLabel>Job Title</CFormLabel>
                     <CFormInput
@@ -169,28 +177,39 @@ const NewUserPage = () => {
                   </CCol>
                 </CRow>
 
+                <CRow className="mb-3"></CRow>
+
                 <CRow className="mb-3">
+                  <CCol>
+                    <CFormLabel>External Email</CFormLabel>
+                    <CFormInput
+                      type="text"
+                      name="location"
+                      placeholder="Enter location"
+                      value={externalEmail}
+                      onChange={(e) => setLocationField(e.target.value)}
+                      required
+                    />
+                  </CCol>
                   <CCol>
                     <CFormLabel>Location</CFormLabel>
                     <CFormInput
                       type="text"
                       name="location"
                       placeholder="Enter location"
-                      value={location}
-                      onChange={(e) => setLocation(e.target.value)}
+                      value={locationField}
+                      onChange={(e) => setLocationField(e.target.value)}
                       required
                     />
                   </CCol>
                 </CRow>
 
+                <CRow className="mb-3"></CRow>
+
                 <CRow className="mb-3">
                   <CCol>
                     <CFormLabel>Salary (Optional)</CFormLabel>
-                    <SalaryInput
-                      value={salary} // Pass the salary value
-                      onChange={setSalary} // Pass the setter to update the salary
-                      readOnly={false}
-                    />
+                    <SalaryInput value={salary} onChange={setSalary} readOnly={false} />
                   </CCol>
                 </CRow>
               </>
@@ -198,16 +217,15 @@ const NewUserPage = () => {
 
             <CRow>
               <CCol className="text-end">
-              <CButton type="submit" color="primary" disabled={loading}>
+                <CButton type="submit" color="primary" disabled={loading}>
                   {loading ? <CSpinner size="sm" /> : 'Create User'}
                 </CButton>
-                <ToastNotification deets={toastDeets}/>
               </CCol>
             </CRow>
           </CCardBody>
         </CCard>
       </CForm>
-
+      <ToastNotification deets={toastDeets} />
     </>
   )
 }
