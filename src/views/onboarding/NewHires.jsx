@@ -30,108 +30,42 @@ const OnboardingPage = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [statusFilter, setStatusFilter] = useState('')
-  const itemsPerPage = 5
+  const [newHires, setNewHires] = useState([]) // Updated to dynamic data
   const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' })
-
   const [modalVisible, setModalVisible] = useState(false)
   const [selectedApplicant, setSelectedApplicant] = useState(null)
+  const itemsPerPage = 5
   const navigate = useNavigate()
 
-  // Sample data for new hires
-  const newHires = [
-    {
-      id: 1,
-      name: 'John Doe',
-      email: 'john@example.com',
-      jobTitle: 'Software Engineer',
-      startDate: '',
-      addedDate: '2023-09-15',
-      status: 'Added',
-    },
-    {
-      id: 2,
-      name: 'Jane Smith',
-      email: 'jane@example.com',
-      jobTitle: 'Data Analyst',
-      startDate: '2023-10-05',
-      addedDate: '2023-09-16',
-      status: 'In Progress',
-    },
-    {
-      id: 3,
-      name: 'Alice Johnson',
-      email: 'alice@example.com',
-      jobTitle: 'Product Manager',
-      startDate: '2023-10-10',
-      addedDate: '2023-09-17',
-      status: 'Complete',
-    },
-    {
-      id: 4,
-      name: 'Bob Brown',
-      email: 'bob@example.com',
-      jobTitle: 'UX Designer',
-      startDate: '',
-      addedDate: '2023-09-18',
-      status: 'Added',
-    },
-    {
-      id: 5,
-      name: 'Charlie Davis',
-      email: 'charlie@example.com',
-      jobTitle: 'DevOps Engineer',
-      startDate: '2023-10-20',
-      addedDate: '2023-09-19',
-      status: 'In Progress',
-    },
-    {
-      id: 6,
-      name: 'Eve Adams',
-      email: 'eve@example.com',
-      jobTitle: 'QA Engineer',
-      startDate: '2023-10-25',
-      addedDate: '2023-09-20',
-      status: 'Complete',
-    },
-    {
-      id: 7,
-      name: 'Frank Miller',
-      email: 'frank@example.com',
-      jobTitle: 'Data Scientist',
-      startDate: '',
-      addedDate: '2023-09-21',
-      status: 'Added',
-    },
-    {
-      id: 8,
-      name: 'Grace Wilson',
-      email: 'grace@example.com',
-      jobTitle: 'Marketing Specialist',
-      startDate: '2023-11-01',
-      addedDate: '2023-09-22',
-      status: 'In Progress',
-    },
-    {
-      id: 9,
-      name: 'Henry Lee',
-      email: 'henry@example.com',
-      jobTitle: 'Sales Executive',
-      startDate: '2023-11-05',
-      addedDate: '2023-09-23',
-      status: 'Complete',
-    },
-    {
-      id: 10,
-      name: 'Isabella King',
-      email: 'isabella@example.com',
-      jobTitle: 'HR Coordinator',
-      startDate: '',
-      addedDate: '2023-09-24',
-      status: 'Added',
-    },
-  ]
+  // Fetch new hires data from API on component load
+  useEffect(() => {
+    const fetchNewHires = async () => {
+      try {
+        const data = await apiService.get('/checklist/new-hires')
+        const formattedData = data.map((item) => ({
+          id: item.id,
+          employeeId: item.employeeId,
+          name: item.employee.name,
+          email: item.employee.email,
+          jobTitle: item.employee.jobTitle,
+          jobId: item.jobId,
+          startDate: item.startDate ? item.startDate.split('T')[0] : '',
+          addedDate: item.hireDate.split('T')[0],
+          status: item.status,
+          resume: item.resume,
+          identification: item.identification,
+          taxInformation: item.taxInformation,
+          trainingDate : item.trainingDate
+        }))
+        setNewHires(formattedData)
+      } catch (error) {
+        console.error('Failed to fetch new hires:', error)
+      }
+    }
+    fetchNewHires()
+  }, [])
 
-  // Function to handle sorting
+  // Sorting logic
   const requestSort = (key) => {
     let direction = 'asc'
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -140,7 +74,6 @@ const OnboardingPage = () => {
     setSortConfig({ key, direction })
   }
 
-  // Sorting logic
   const sortedNewHires = [...newHires].sort((a, b) => {
     if (sortConfig.direction === 'asc') {
       return a[sortConfig.key] < b[sortConfig.key] ? -1 : 1
@@ -149,30 +82,62 @@ const OnboardingPage = () => {
     }
   })
 
-  // Filter new hires based on search query and status filter
+  // Filter and paginate the data
   const filteredNewHires = sortedNewHires.filter(
     (hire) =>
       (hire.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         hire.email.toLowerCase().includes(searchQuery.toLowerCase())) &&
       (statusFilter ? hire.status === statusFilter : true),
   )
-
-  // Pagination logic
   const indexOfLastHire = currentPage * itemsPerPage
   const indexOfFirstHire = indexOfLastHire - itemsPerPage
   const currentHires = filteredNewHires.slice(indexOfFirstHire, indexOfLastHire)
-
   const totalPages = Math.ceil(filteredNewHires.length / itemsPerPage)
 
-  const handleStartOnboarding = (date) => {
-    console.log('Onboarding started for:', selectedApplicant, 'with start date:', date)
-    // Add logic to update the applicant's status with the start date
+  const handleViewJobClick = (jobId) => {
+    navigate(`/recruitment/jobs/view/${jobId}`)
   }
 
-  const handleEditJobClick = (jobTitle, id) => {
-    // need to get the job id somehow of this job
-    navigate(`/recruitment/jobs/view/${id}`);
-};
+  const handleEditHireClick = (employeeId) => {
+    navigate(`/hr/employees/edit/${employeeId}`)
+  }
+
+  const countChecklist = (hire) => {
+    const fieldsToCheck = [
+      hire.resume,
+      hire.identification,
+      hire.taxInformation,
+      hire.trainingDate,
+    ];
+  
+    // Filter the fields to count those that are either null or an empty string
+    const nullOrBlankCount = fieldsToCheck.filter(
+      (field) => field === null || field === ""
+    ).length;
+  
+    return nullOrBlankCount;
+  };
+
+  const handleStartOnboarding = async (date) => {
+    console.log('Onboarding started for:', selectedApplicant, 'with start date:', date)
+    let hire = newHires.find((entry) => selectedApplicant === entry.id)
+    hire.startDate = date
+    hire.status = 'In-Progress'
+    console.log(hire)
+    // Add logic to update the applicant's status with the start date
+    await apiService.put(`/checklist/${hire.id}`, {
+      startDate: hire.startDate,
+      status: hire.status,
+    })
+    // update view setNewHires
+    setNewHires((prevNewHires) => {
+      return prevNewHires.map((existingHire) =>
+        existingHire.id === hire.id ? { ...existingHire, ...hire } : existingHire,
+      )
+    })
+
+    setSelectedApplicant(null)
+  }
 
   return (
     <CContainer>
@@ -199,7 +164,7 @@ const OnboardingPage = () => {
                   >
                     <option value="">All Statuses</option>
                     <option value="Added">Added</option>
-                    <option value="In Progress">In Progress</option>
+                    <option value="In-Progress">In-Progress</option>
                     <option value="Complete">Complete</option>
                   </CFormSelect>
                 </CCol>
@@ -232,9 +197,9 @@ const OnboardingPage = () => {
                       <CTableDataCell>{hire.name}</CTableDataCell>
                       <CTableDataCell>{hire.email}</CTableDataCell>
                       <CTableDataCell>
-                      <CButton color="link" onClick={() => handleEditJobClick(hire.jobTitle, hire.id)}>
-        {hire.jobTitle}
-    </CButton>
+                        <CButton color="link" onClick={() => handleViewJobClick(hire.jobId)}>
+                          {hire.jobTitle}
+                        </CButton>
                       </CTableDataCell>
                       <CTableDataCell>{hire.startDate}</CTableDataCell>
                       <CTableDataCell>{hire.addedDate}</CTableDataCell>
@@ -243,7 +208,7 @@ const OnboardingPage = () => {
                         <CButton
                           color="link"
                           className="me-2"
-                          onClick={() => alert(`Editing ${hire.name}`)}
+                          onClick={() => handleEditHireClick(hire.employeeId)}
                         >
                           <CIcon icon={cilPen} />
                         </CButton>
@@ -252,21 +217,21 @@ const OnboardingPage = () => {
                             color="success"
                             className="me-2"
                             onClick={() => {
-                              setSelectedApplicant(hire.id) // Set the selected applicant
+                              setSelectedApplicant(hire.id)
                               setModalVisible(true)
                             }}
                           >
                             Start Onboarding
                           </CButton>
                         )}
-                        {hire.status === 'In Progress' && (
+                        {hire.status === 'In-Progress' && (
                           <CButton
                             color="info"
                             onClick={() => navigate(`/hr/onboarding/checklist/${hire.id}`)}
                           >
                             Checklist
                             <CBadge color="danger" shape="rounded-pill" className="ms-2">
-                              {Math.floor(Math.random() * 10) + 1}
+                              {countChecklist(hire)}
                             </CBadge>
                           </CButton>
                         )}
@@ -289,7 +254,6 @@ const OnboardingPage = () => {
                   ))}
                 </CTableBody>
               </CTable>
-              {/* Pagination */}
               <CPagination aria-label="New hires pagination" className="mt-3">
                 <CPaginationItem
                   onClick={() => setCurrentPage(currentPage - 1)}

@@ -63,6 +63,7 @@ const NewUserPage = () => {
         reportsTo: data?.job?.hiringManagerId,
         externalEmail: data?.candidate?.externalEmail,
         candidateId: data?.candidateId,
+        jobId: data?.job?.id
       }),
     }
 

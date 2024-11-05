@@ -214,7 +214,7 @@ const ViewJobPage = () => {
       try {
         setIsLoading(true)
         const response = await apiService.get(`/job/${id}`)
-        setJobData(response.data)
+        setJobData(response)
       } catch (error) {
         console.error('Error fetching job data:', error)
         // Handle error (e.g., show error message to user)
