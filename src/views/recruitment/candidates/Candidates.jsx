@@ -16,6 +16,7 @@ import {
   CCardHeader,
   CRow,
   CFormCheck,
+  CSpinner,
 } from '@coreui/react'
 import { useNavigate } from 'react-router-dom' // Updated to useNavigate
 import { cilPen, cilTrash } from '@coreui/icons' // Import CoreUI icons
@@ -33,6 +34,7 @@ const Candidates = () => {
   const [sortDirection, setSortDirection] = useState('asc')
   const navigate = useNavigate() // Use useNavigate
   const [toastDeets, setToastDeets] = useState({})
+  const [loading, setLoading] = useState(true)
 
   // Fetch data from the API
   useEffect(() => {
@@ -42,6 +44,8 @@ const Candidates = () => {
         setData(response)
       } catch (error) {
         console.error('Error fetching candidates:', error)
+      } finally {
+        setLoading(false)
       }
     }
     fetchData()
@@ -107,7 +111,6 @@ const Candidates = () => {
 
   return (
     <>
-      
       <CCard>
         <CCardHeader as="h5" className="text-center">
           Candidates List
@@ -133,86 +136,90 @@ const Candidates = () => {
             />
           </CRow>
           <CRow>
-            <CTable hover>
-              <CTableHead>
-                <CTableRow>
-                  <CTableHeaderCell onClick={() => handleSort('name')}>
-                    Name {sortColumn === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
-                  </CTableHeaderCell>
-                  <CTableHeaderCell onClick={() => handleSort('email')}>
-                    Email {sortColumn === 'email' && (sortDirection === 'asc' ? '↑' : '↓')}
-                  </CTableHeaderCell>
-                  <CTableHeaderCell onClick={() => handleSort('phone')}>
-                    Phone {sortColumn === 'phone' && (sortDirection === 'asc' ? '↑' : '↓')}
-                  </CTableHeaderCell>
-                  <CTableHeaderCell onClick={() => handleSort('location')}>
-                    Location {sortColumn === 'location' && (sortDirection === 'asc' ? '↑' : '↓')}
-                  </CTableHeaderCell>
-                  <CTableHeaderCell>Actions</CTableHeaderCell>
-                </CTableRow>
-              </CTableHead>
-              <CTableBody>
-                {currentData.length > 0 ? (
-                  currentData.map((candidate) => (
-                    <CTableRow key={candidate.id} style={{ cursor: 'pointer' }}>
-                      <CTableDataCell>{candidate.name}</CTableDataCell>
-                      <CTableDataCell>{candidate.email}</CTableDataCell>
-                      <CTableDataCell>{candidate.phone}</CTableDataCell>
-                      <CTableDataCell>{candidate.location}</CTableDataCell>
-                      <CTableDataCell>
-                        {candidate.status !== 'Employee' && (
-                          <>
-                            <CButton
-                              color="info"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleEditClick(candidate.id)
-                              }}
-                            >
-                              <CIcon icon={cilPen} />
-                            </CButton>{' '}
-                            <CButton
-                              color="danger"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                alert('Remove clicked')
-                              }}
-                            >
-                              <CIcon icon={cilTrash} />
-                            </CButton>{' '}
-                          </>
-                        )}
-
-                        {candidate.status === 'Employee' && (
-                          <span>Go to Employees</span>
-                        )}
-                        {candidate.status === 'Hired' && (
-                            
-                          <CButton
-                            color="success"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleRegisterClick(candidate)
-                            }}
-                          >
-                            Start Onboarding
-                          </CButton>
-                        )}
-                      </CTableDataCell>
+            {loading ? (
+              <CSpinner />
+            ) : (
+              <>
+                <CTable hover>
+                  <CTableHead>
+                    <CTableRow>
+                      <CTableHeaderCell onClick={() => handleSort('name')}>
+                        Name {sortColumn === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
+                      </CTableHeaderCell>
+                      <CTableHeaderCell onClick={() => handleSort('email')}>
+                        Email {sortColumn === 'email' && (sortDirection === 'asc' ? '↑' : '↓')}
+                      </CTableHeaderCell>
+                      <CTableHeaderCell onClick={() => handleSort('phone')}>
+                        Phone {sortColumn === 'phone' && (sortDirection === 'asc' ? '↑' : '↓')}
+                      </CTableHeaderCell>
+                      <CTableHeaderCell onClick={() => handleSort('location')}>
+                        Location{' '}
+                        {sortColumn === 'location' && (sortDirection === 'asc' ? '↑' : '↓')}
+                      </CTableHeaderCell>
+                      <CTableHeaderCell>Actions</CTableHeaderCell>
                     </CTableRow>
-                  ))
-                ) : (
-                  <CTableRow>
-                    <CTableDataCell colSpan="5" className="text-center">
-                      No Candidates Found
-                    </CTableDataCell>
-                  </CTableRow>
-                )}
-              </CTableBody>
-            </CTable>
+                  </CTableHead>
+                  <CTableBody>
+                    {currentData.length > 0 ? (
+                      currentData.map((candidate) => (
+                        <CTableRow key={candidate.id} style={{ cursor: 'pointer' }}>
+                          <CTableDataCell>{candidate.name}</CTableDataCell>
+                          <CTableDataCell>{candidate.email}</CTableDataCell>
+                          <CTableDataCell>{candidate.phone}</CTableDataCell>
+                          <CTableDataCell>{candidate.location}</CTableDataCell>
+                          <CTableDataCell>
+                            {candidate.status !== 'Employee' && (
+                              <>
+                                <CButton
+                                  color="info"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleEditClick(candidate.id)
+                                  }}
+                                >
+                                  <CIcon icon={cilPen} />
+                                </CButton>{' '}
+                                <CButton
+                                  color="danger"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    alert('Remove clicked')
+                                  }}
+                                >
+                                  <CIcon icon={cilTrash} />
+                                </CButton>{' '}
+                              </>
+                            )}
+
+                            {candidate.status === 'Employee' && <span>Go to Employees</span>}
+                            {candidate.status === 'Hired' && (
+                              <CButton
+                                color="success"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleRegisterClick(candidate)
+                                }}
+                              >
+                                Start Onboarding
+                              </CButton>
+                            )}
+                          </CTableDataCell>
+                        </CTableRow>
+                      ))
+                    ) : (
+                      <CTableRow>
+                        <CTableDataCell colSpan="5" className="text-center">
+                          No Candidates Found
+                        </CTableDataCell>
+                      </CTableRow>
+                    )}
+                  </CTableBody>
+                </CTable>
+              </>
+            )}
           </CRow>
           <CRow>
             <CPagination aria-label="Page navigation">

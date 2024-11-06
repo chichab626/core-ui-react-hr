@@ -54,7 +54,6 @@ const JobApplicants = ({ jobData }) => {
   const [searchQuery, setSearchQuery] = useState('')
   const [applicantQuery, setApplicantQuery] = useState('')
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
   const [addedPage, setAddedPage] = useState(1)
   const [availablePage, setAvailablePage] = useState(1)
   const itemsPerPage = 5
@@ -232,7 +231,7 @@ const JobApplicants = ({ jobData }) => {
     } catch (err) {
         setToastDeets({
             type: 'danger',
-            message: 'An error occurred: ' + error?.response?.data?.message || error.message,
+            message: 'An error occurred: ' + err?.response?.data?.message || err.message,
             title: 'Update Status',
           })
     } finally {

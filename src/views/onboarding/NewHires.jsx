@@ -18,6 +18,7 @@ import {
   CPagination,
   CPaginationItem,
   CBadge,
+  CSpinner,
 } from '@coreui/react'
 import { CIcon } from '@coreui/icons-react'
 import { cilPen } from '@coreui/icons'
@@ -34,6 +35,7 @@ const OnboardingPage = () => {
   const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' })
   const [modalVisible, setModalVisible] = useState(false)
   const [selectedApplicant, setSelectedApplicant] = useState(null)
+  const [loading, setLoading] = useState(true)
   const itemsPerPage = 5
   const navigate = useNavigate()
 
@@ -55,11 +57,13 @@ const OnboardingPage = () => {
           resume: item.resume,
           identification: item.identification,
           taxInformation: item.taxInformation,
-          trainingDate : item.trainingDate
+          trainingDate: item.trainingDate,
         }))
         setNewHires(formattedData)
       } catch (error) {
         console.error('Failed to fetch new hires:', error)
+      } finally {
+        setLoading(false)
       }
     }
     fetchNewHires()
@@ -103,20 +107,13 @@ const OnboardingPage = () => {
   }
 
   const countChecklist = (hire) => {
-    const fieldsToCheck = [
-      hire.resume,
-      hire.identification,
-      hire.taxInformation,
-      hire.trainingDate,
-    ];
-  
+    const fieldsToCheck = [hire.resume, hire.identification, hire.taxInformation, hire.trainingDate]
+
     // Filter the fields to count those that are either null or an empty string
-    const nullOrBlankCount = fieldsToCheck.filter(
-      (field) => field === null || field === ""
-    ).length;
-  
-    return nullOrBlankCount;
-  };
+    const nullOrBlankCount = fieldsToCheck.filter((field) => field === null || field === '').length
+
+    return nullOrBlankCount
+  }
 
   const handleStartOnboarding = async (date) => {
     console.log('Onboarding started for:', selectedApplicant, 'with start date:', date)
@@ -191,68 +188,82 @@ const OnboardingPage = () => {
                     <CTableHeaderCell>Actions</CTableHeaderCell>
                   </CTableRow>
                 </CTableHead>
-                <CTableBody>
-                  {currentHires.map((hire) => (
-                    <CTableRow key={hire.id}>
-                      <CTableDataCell>{hire.name}</CTableDataCell>
-                      <CTableDataCell>{hire.email}</CTableDataCell>
-                      <CTableDataCell>
-                        <CButton color="link" onClick={() => handleViewJobClick(hire.jobId)}>
-                          {hire.jobTitle}
-                        </CButton>
-                      </CTableDataCell>
-                      <CTableDataCell>{hire.startDate}</CTableDataCell>
-                      <CTableDataCell>{hire.addedDate}</CTableDataCell>
-                      <CTableDataCell>{hire.status}</CTableDataCell>
-                      <CTableDataCell>
-                        <CButton
-                          color="link"
-                          className="me-2"
-                          onClick={() => handleEditHireClick(hire.employeeId)}
-                        >
-                          <CIcon icon={cilPen} />
-                        </CButton>
-                        {hire.status === 'Added' && (
-                          <CButton
-                            color="success"
-                            className="me-2"
-                            onClick={() => {
-                              setSelectedApplicant(hire.id)
-                              setModalVisible(true)
-                            }}
-                          >
-                            Start Onboarding
-                          </CButton>
-                        )}
-                        {hire.status === 'In-Progress' && (
-                          <CButton
-                            color="info"
-                            onClick={() => navigate(`/hr/onboarding/checklist/${hire.id}`)}
-                          >
-                            Checklist
-                            <CBadge color="danger" shape="rounded-pill" className="ms-2">
-                              {countChecklist(hire)}
-                            </CBadge>
-                          </CButton>
-                        )}
-                        <StartOnboardingModal
-                          visible={modalVisible}
-                          onClose={() => setModalVisible(false)}
-                          onConfirm={handleStartOnboarding}
-                        />
-                        {hire.status === 'Complete' && (
-                          <CButton
-                            color="secondary"
-                            onClick={() => navigate(`/hr/onboarding/checklist/${hire.id}`)}
-                            className="me-2"
-                          >
-                            Checklist
-                          </CButton>
-                        )}
-                      </CTableDataCell>
-                    </CTableRow>
-                  ))}
-                </CTableBody>
+                {loading ? (
+                  <CSpinner />
+                ) : (
+                  <>
+                    <CTableBody>
+                      {currentHires.map((hire) => (
+                        <CTableRow key={hire.id}>
+                          <CTableDataCell>{hire.name}</CTableDataCell>
+                          <CTableDataCell>{hire.email}</CTableDataCell>
+                          <CTableDataCell>
+                            <CButton color="link" onClick={() => handleViewJobClick(hire.jobId)}>
+                              {hire.jobTitle}
+                            </CButton>
+                          </CTableDataCell>
+                          <CTableDataCell>{hire.startDate}</CTableDataCell>
+                          <CTableDataCell>{hire.addedDate}</CTableDataCell>
+                          <CTableDataCell>{hire.status}</CTableDataCell>
+                          <CTableDataCell>
+                            <CButton
+                              color="link"
+                              className="me-2"
+                              onClick={() => handleEditHireClick(hire.employeeId)}
+                            >
+                              <CIcon icon={cilPen} />
+                            </CButton>
+                            {hire.status === 'Added' && (
+                              <CButton
+                                color="success"
+                                className="me-2"
+                                onClick={() => {
+                                  setSelectedApplicant(hire.id)
+                                  setModalVisible(true)
+                                }}
+                              >
+                                Start Onboarding
+                              </CButton>
+                            )}
+                            {hire.status === 'In-Progress' && (
+                              <CButton
+                                color="info"
+                                onClick={() =>
+                                  navigate(`/hr/onboarding/checklist/${hire.id}`, {
+                                    state: { hire },
+                                  })
+                                }
+                              >
+                                Checklist
+                                <CBadge color="danger" shape="rounded-pill" className="ms-2">
+                                  {countChecklist(hire)}
+                                </CBadge>
+                              </CButton>
+                            )}
+                            <StartOnboardingModal
+                              visible={modalVisible}
+                              onClose={() => setModalVisible(false)}
+                              onConfirm={handleStartOnboarding}
+                            />
+                            {hire.status === 'Complete' && (
+                              <CButton
+                                color="secondary"
+                                onClick={() =>
+                                  navigate(`/hr/onboarding/checklist/${hire.id}`, {
+                                    state: { hire },
+                                  })
+                                }
+                                className="me-2"
+                              >
+                                Checklist
+                              </CButton>
+                            )}
+                          </CTableDataCell>
+                        </CTableRow>
+                      ))}
+                    </CTableBody>
+                  </>
+                )}
               </CTable>
               <CPagination aria-label="New hires pagination" className="mt-3">
                 <CPaginationItem

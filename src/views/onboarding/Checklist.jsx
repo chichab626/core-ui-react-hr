@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import {
   CContainer,
   CRow,
@@ -24,8 +24,12 @@ import {
   CCardBody,
   CCardHeader,
 } from '@coreui/react'
+import { CIcon } from '@coreui/icons-react'
+import { cilCheckCircle } from '@coreui/icons'
+import ToastNotification from '../../components/ToasterNotification.jsx'
+import apiService from '../../service/apiService.js'
 
-const Checklist = ({ checklistData, setChecklistData }) => {
+const Checklist = ({ checklistData, setChecklistData, hireData }) => {
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('All')
   const [showModal, setShowModal] = useState(false)
@@ -63,22 +67,50 @@ const Checklist = ({ checklistData, setChecklistData }) => {
     setSalary(e.target.value)
   }
 
-  const handleSave = () => {
-    const updatedData = checklistData.map((item) => {
-      if (item.id === selectedTask.id) {
-        if (selectedTask.type === 'document' && upload) {
-          item.document = upload.name // Update with uploaded file name
-          item.uploaded = true
-        } else if (selectedTask.type === 'date') {
-          item.date = startDate // Update with selected date
-          item.uploaded = true
-        } else if (selectedTask.type === 'number') {
-          item.salary = salary // Update with salary
-          item.uploaded = true
+  const handleSave = async () => {
+    const documentMapping = {
+      1: 'resume',
+      2: 'identification',
+      3: 'taxInformation',
+      4: 'trainingDate',
+    }
+
+    const updatedData = await Promise.all(
+      checklistData.map(async (item) => {
+        if (item.id === selectedTask.id) {
+          // Update item properties based on selected task type
+          switch (selectedTask.type) {
+            case 'document':
+              if (upload) {
+                item.value = upload.name // Update with uploaded file name
+                item.uploaded = true
+              }
+              break
+            case 'date':
+              item.value = startDate // Update with selected date
+              item.uploaded = true
+              break
+            case 'number':
+              item.salary = salary // Update with salary
+              item.uploaded = true
+              break
+            default:
+              break
+          }
         }
-      }
-      return item
-    })
+
+        // Determine the correct field to save using documentMapping
+        const fieldKey = documentMapping[item.id]
+        const itemToSave = fieldKey && item.value ? { [fieldKey]: item.value } : {}
+
+        // Save the updated item data via API
+        if (Object.keys(itemToSave).length > 0) {
+          await apiService.put(`/checklist/${hireData.id}`, itemToSave)
+        }
+
+        return item
+      }),
+    )
 
     setChecklistData(updatedData)
 
@@ -87,6 +119,12 @@ const Checklist = ({ checklistData, setChecklistData }) => {
     setStartDate('')
     setSalary('')
     setShowModal(false)
+  }
+
+  const completeOnboarding = async () => {
+    // Call API to complete onboarding
+    await apiService.put(`/checklist/${hireData.id}`, { status: 'Complete' })
+    navigate(-1)
   }
 
   return (
@@ -129,22 +167,24 @@ const Checklist = ({ checklistData, setChecklistData }) => {
                 <CTableRow key={item.id}>
                   <CTableDataCell>{item.document}</CTableDataCell>
                   <CTableDataCell>
-                    <CBadge color={item.uploaded ? 'success' : 'secondary'}>
-                      {item.uploaded ? 'Completed' : 'Pending'}
-                    </CBadge>
+                    {item.uploaded ? (
+                      <CIcon style={{ color: 'lightgreen' }} icon={cilCheckCircle} />
+                    ) : (
+                      <CIcon style={{ color: 'darkgray' }} icon={cilCheckCircle} />
+                    )}
                   </CTableDataCell>
                   <CTableDataCell>
                     {item.type === 'document' ? (
                       <CButton
                         color="link"
-                        href={`/${item.document}.pdf`}
+                        href={`/${item.value}`}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        {item.document}.pdf
+                        {item.value}
                       </CButton>
                     ) : item.type === 'date' ? (
-                      item.date || ''
+                      item.value || ''
                     ) : (
                       item.salary || ''
                     )}
@@ -153,7 +193,6 @@ const Checklist = ({ checklistData, setChecklistData }) => {
                     <CButton color="info" className="me-2" onClick={() => handleOpenModal(item)}>
                       Edit
                     </CButton>
-                    <CButton color="danger">Clear</CButton>
                   </CTableDataCell>
                 </CTableRow>
               ))}
@@ -166,17 +205,15 @@ const Checklist = ({ checklistData, setChecklistData }) => {
           <CButton color="danger" onClick={() => navigate(-1)} className="me-2">
             Back
           </CButton>
-          <CButton
-            color="primary"
-            onClick={() => {
-              setSelectedTask(null)
-              setStartDate('')
-              setSalary('')
-              setShowModal(true)
-            }}
-          >
-            Complete Onboarding
-          </CButton>
+          {hireData.status !== 'Complete' && (
+            <CButton
+              color="primary"
+              onClick={() => completeOnboarding()}
+              disabled={!checklistData.every((item) => item.value)}
+            >
+              Complete Onboarding
+            </CButton>
+          )}
         </CCol>
       </CRow>
 
@@ -222,17 +259,43 @@ const Checklist = ({ checklistData, setChecklistData }) => {
 }
 
 const ChecklistPage = () => {
+  const location = useLocation()
   const { id } = useParams()
   const [checklistData, setChecklistData] = useState([])
 
+  const hire = location?.state?.hire
   useEffect(() => {
     const fetchChecklist = async () => {
       // Mock data for testing
       const data = [
-        { id: 1, document: 'Upload Resume', uploaded: true, type: 'document' },
-        { id: 2, document: 'Upload Identification', uploaded: false, type: 'document' },
-        { id: 3, document: 'Upload Tax Information', uploaded: false, type: 'document' },
-        { id: 4, document: 'Upload Training Date', uploaded: false, type: 'date' },
+        {
+          id: 1,
+          document: 'Upload Resume',
+          uploaded: hire.resume,
+          type: 'document',
+          value: hire.resume,
+        },
+        {
+          id: 2,
+          document: 'Upload Identification',
+          uploaded: hire.identification,
+          type: 'document',
+          value: hire.identification,
+        },
+        {
+          id: 3,
+          document: 'Upload Tax Information',
+          uploaded: hire.taxInformation,
+          type: 'document',
+          value: hire.taxInformation,
+        },
+        {
+          id: 4,
+          document: 'Choose Training Date',
+          uploaded: hire.trainingDate,
+          type: 'date',
+          value: hire.trainingDate ? new Date(hire.trainingDate).toISOString().split('T')[0] : null,
+        },
       ]
       setChecklistData(data)
     }
@@ -241,7 +304,7 @@ const ChecklistPage = () => {
   }, [id])
 
   return checklistData.length ? (
-    <Checklist checklistData={checklistData} setChecklistData={setChecklistData} />
+    <Checklist checklistData={checklistData} setChecklistData={setChecklistData} hireData={hire} />
   ) : (
     <div>Loading...</div>
   )

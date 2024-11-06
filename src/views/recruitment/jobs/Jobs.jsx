@@ -16,6 +16,7 @@ import {
   CCardText,
   CCardHeader,
   CRow,
+  CSpinner,
 } from '@coreui/react'
 import { useNavigate } from 'react-router-dom'
 import CIcon from '@coreui/icons-react'
@@ -29,6 +30,7 @@ const Jobs = () => {
   const rowsPerPage = 5
   const [sortColumn, setSortColumn] = useState('title')
   const [sortDirection, setSortDirection] = useState('asc')
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -38,6 +40,8 @@ const Jobs = () => {
         console.log(response)
       } catch (error) {
         console.error('Error fetching jobs:', error)
+      } finally {
+        setLoading(false)
       }
     }
     fetchJobs()
@@ -110,7 +114,8 @@ const Jobs = () => {
             />
           </CRow>
           <CRow>
-            <CTable hover>
+            
+            {loading ? <CSpinner /> : <><CTable hover>
               <CTableHead>
                 <CTableRow>
                   <CTableHeaderCell onClick={() => handleSort('title')}>
@@ -174,7 +179,8 @@ const Jobs = () => {
                   </CTableRow>
                 )}
               </CTableBody>
-            </CTable>
+            </CTable></>}
+
           </CRow>
           <CRow>
             <CPagination aria-label="Page navigation">
