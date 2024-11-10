@@ -36,6 +36,7 @@ const OnboardingPage = () => {
   const [modalVisible, setModalVisible] = useState(false)
   const [selectedApplicant, setSelectedApplicant] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [toastDeets, setToastDeets] = useState(null)
   const itemsPerPage = 5
   const navigate = useNavigate()
 
@@ -62,6 +63,11 @@ const OnboardingPage = () => {
         setNewHires(formattedData)
       } catch (error) {
         console.error('Failed to fetch new hires:', error)
+        setToastDeets({
+          type: 'danger',
+          message: 'Failed to load new hires data.',
+          title: 'Error',
+        })
       } finally {
         setLoading(false)
       }
@@ -121,23 +127,40 @@ const OnboardingPage = () => {
     hire.startDate = date
     hire.status = 'In-Progress'
     console.log(hire)
-    // Add logic to update the applicant's status with the start date
-    await apiService.put(`/checklist/${hire.id}`, {
-      startDate: hire.startDate,
-      status: hire.status,
-    })
-    // update view setNewHires
-    setNewHires((prevNewHires) => {
-      return prevNewHires.map((existingHire) =>
-        existingHire.id === hire.id ? { ...existingHire, ...hire } : existingHire,
-      )
-    })
 
-    setSelectedApplicant(null)
+    try {
+      await apiService.put(`/checklist/${hire.id}`, {
+        startDate: hire.startDate,
+        status: hire.status,
+      })
+
+      // Update view setNewHires
+      setNewHires((prevNewHires) => {
+        return prevNewHires.map((existingHire) =>
+          existingHire.id === hire.id ? { ...existingHire, ...hire } : existingHire,
+        )
+      })
+
+      setToastDeets({
+        type: 'success',
+        message: 'Onboarding started successfully.',
+        title: 'Success',
+      })
+
+      setSelectedApplicant(null)
+    } catch (error) {
+      setToastDeets({
+        type: 'danger',
+        message: 'Failed to start onboarding: ' + (error.response?.data?.message || error.message),
+        title: 'Error',
+      })
+    }
   }
 
   return (
     <CContainer>
+      {/* rendering the toast component */}
+      <ToastNotification deets={toastDeets} />
       <CRow>
         <CCol>
           <CCard>
@@ -191,78 +214,76 @@ const OnboardingPage = () => {
                 {loading ? (
                   <CSpinner />
                 ) : (
-                  <>
-                    <CTableBody>
-                      {currentHires.map((hire) => (
-                        <CTableRow key={hire.id}>
-                          <CTableDataCell>{hire.name}</CTableDataCell>
-                          <CTableDataCell>{hire.email}</CTableDataCell>
-                          <CTableDataCell>
-                            <CButton color="link" onClick={() => handleViewJobClick(hire.jobId)}>
-                              {hire.jobTitle}
-                            </CButton>
-                          </CTableDataCell>
-                          <CTableDataCell>{hire.startDate}</CTableDataCell>
-                          <CTableDataCell>{hire.addedDate}</CTableDataCell>
-                          <CTableDataCell>{hire.status}</CTableDataCell>
-                          <CTableDataCell>
+                  <CTableBody>
+                    {currentHires.map((hire) => (
+                      <CTableRow key={hire.id}>
+                        <CTableDataCell>{hire.name}</CTableDataCell>
+                        <CTableDataCell>{hire.email}</CTableDataCell>
+                        <CTableDataCell>
+                          <CButton color="link" onClick={() => handleViewJobClick(hire.jobId)}>
+                            {hire.jobTitle}
+                          </CButton>
+                        </CTableDataCell>
+                        <CTableDataCell>{hire.startDate}</CTableDataCell>
+                        <CTableDataCell>{hire.addedDate}</CTableDataCell>
+                        <CTableDataCell>{hire.status}</CTableDataCell>
+                        <CTableDataCell>
+                          <CButton
+                            color="link"
+                            className="me-2"
+                            onClick={() => handleEditHireClick(hire.employeeId)}
+                          >
+                            <CIcon icon={cilPen} />
+                          </CButton>
+                          {hire.status === 'Added' && (
                             <CButton
-                              color="link"
+                              color="success"
                               className="me-2"
-                              onClick={() => handleEditHireClick(hire.employeeId)}
+                              onClick={() => {
+                                setSelectedApplicant(hire.id)
+                                setModalVisible(true)
+                              }}
                             >
-                              <CIcon icon={cilPen} />
+                              Start Onboarding
                             </CButton>
-                            {hire.status === 'Added' && (
-                              <CButton
-                                color="success"
-                                className="me-2"
-                                onClick={() => {
-                                  setSelectedApplicant(hire.id)
-                                  setModalVisible(true)
-                                }}
-                              >
-                                Start Onboarding
-                              </CButton>
-                            )}
-                            {hire.status === 'In-Progress' && (
-                              <CButton
-                                color="info"
-                                onClick={() =>
-                                  navigate(`/hr/onboarding/checklist/${hire.id}`, {
-                                    state: { hire },
-                                  })
-                                }
-                              >
-                                Checklist
-                                <CBadge color="danger" shape="rounded-pill" className="ms-2">
-                                  {countChecklist(hire)}
-                                </CBadge>
-                              </CButton>
-                            )}
-                            <StartOnboardingModal
-                              visible={modalVisible}
-                              onClose={() => setModalVisible(false)}
-                              onConfirm={handleStartOnboarding}
-                            />
-                            {hire.status === 'Complete' && (
-                              <CButton
-                                color="secondary"
-                                onClick={() =>
-                                  navigate(`/hr/onboarding/checklist/${hire.id}`, {
-                                    state: { hire },
-                                  })
-                                }
-                                className="me-2"
-                              >
-                                Checklist
-                              </CButton>
-                            )}
-                          </CTableDataCell>
-                        </CTableRow>
-                      ))}
-                    </CTableBody>
-                  </>
+                          )}
+                          {hire.status === 'In-Progress' && (
+                            <CButton
+                              color="info"
+                              onClick={() =>
+                                navigate(`/hr/onboarding/checklist/${hire.id}`, {
+                                  state: { hire },
+                                })
+                              }
+                            >
+                              Checklist
+                              <CBadge color="danger" shape="rounded-pill" className="ms-2">
+                                {countChecklist(hire)}
+                              </CBadge>
+                            </CButton>
+                          )}
+                          <StartOnboardingModal
+                            visible={modalVisible}
+                            onClose={() => setModalVisible(false)}
+                            onConfirm={handleStartOnboarding}
+                          />
+                          {hire.status === 'Complete' && (
+                            <CButton
+                              color="secondary"
+                              onClick={() =>
+                                navigate(`/hr/onboarding/checklist/${hire.id}`, {
+                                  state: { hire },
+                                })
+                              }
+                              className="me-2"
+                            >
+                              Checklist
+                            </CButton>
+                          )}
+                        </CTableDataCell>
+                      </CTableRow>
+                    ))}
+                  </CTableBody>
                 )}
               </CTable>
               <CPagination aria-label="New hires pagination" className="mt-3">
