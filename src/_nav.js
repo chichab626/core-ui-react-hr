@@ -71,6 +71,10 @@ const _nav = [
     name: 'Letters',
     to: '/hr/letters',
     icon: <CIcon icon={cilEnvelopeLetter} customClassName="nav-icon" />,
+    badge: {
+      color: 'info',
+      text: 'new',
+    },
   },
   {
     component: CNavTitle,

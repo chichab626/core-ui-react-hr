@@ -63,29 +63,39 @@ const NewUserPage = () => {
         reportsTo: data?.job?.hiringManagerId,
         externalEmail: data?.candidate?.externalEmail,
         candidateId: data?.candidateId,
-        jobId: data?.job?.id
+        jobId: data?.job?.id,
       }),
     }
 
     try {
       const response = await apiService.post('/users', newUser)
       let successMessage = `Created successfully with User ID: ${response.user.id}`
+      let messageType = 'success'
       if (role.value === 'Employee') {
         successMessage = `Employee User created successfully. User Id ${response.user.id} Employee Id ${response.employee.id}`
       }
 
-      //   if (data && data.candidateId) {
-      //     // this is a redirect from candidates page. update the candidate to status = 'Employee'
-      //     const candidateId = data?.candidateId
-      //     await apiService.put(`/candidates/${candidateId}`, { status: 'Employee' })
-      //   }
+      if (data && data.candidateId) {
+        // this is a redirect from candidates page.
+        messageType = 'info'
+        successMessage = `Employee User created. An onboarding letter will be drafted for ${newUser.name}` 
+        const candidateId = data?.candidateId
+        apiService.post('letters/draft-letters', { letterType: 'Onboarding', applicants: [{
+            candidateId : candidateId,
+            name: newUser.name, 
+            email: newUser.externalEmail,
+            jobId : newUser.jobId,
+            companyEmail : newUser.email,
+            password
+        }], jobTitle: jobTitle})
+      }
 
-      notify('success', successMessage, 'Create User')
+      notify(messageType, successMessage, 'Create User')
     } catch (error) {
       console.log(error)
       notify(
         'danger',
-        'An error occurred while creating the user: ' + +error?.response?.data?.message ||
+        'An error occurred while creating the user: ' + error?.response?.data?.message ||
           error.message,
         'Create User Error',
       )

@@ -223,10 +223,12 @@ const JobApplicants = ({ jobData }) => {
       setSelectedApplicant(applicant)
       if (status == "Job Offer") {
         setToastDeets({
-            type: 'success',
-            message: `A job offer letter will be sent to applicant at ${applicant.email}`,
+            type: 'info',
+            message: `A job offer letter will be drafted for ${applicant.name}`,
             title: 'Update Status',
           })
+
+          apiService.post('letters/draft-letters', { letterType: 'Job Offer', applicants: [applicant], jobTitle: jobData.title})
       }
     } catch (err) {
         setToastDeets({
@@ -243,6 +245,16 @@ const JobApplicants = ({ jobData }) => {
     const selectedApplicants = addedApplicants.filter((applicant) =>
       selectedAdded.includes(applicant.id),
     )
+
+    if (selectedApplicants.length < 1) {
+        setToastDeets({
+            type: 'warning',
+            message: 'No applicants selected',
+            title: 'Job Applicants',
+          })
+        return
+    }
+
     // Prepare the payload for the API request
     const payload = selectedApplicants.map((applicant) => ({
       candidateId: applicant.candidateId,
@@ -253,10 +265,6 @@ const JobApplicants = ({ jobData }) => {
     try {
       // Make the API call to bulk upsert
       const result = await apiService.post('applicants/bulk-upsert', payload)
-
-      let mergedApplicants = result.data?.map((applicant) => {
-        return mergeApplicants(applicant.jobApplicant, selectedApplicants)
-      })
 
       // If the API call is successful, update the UI state
       setAddedApplicants((prev) =>
@@ -273,52 +281,19 @@ const JobApplicants = ({ jobData }) => {
         message: `Selected applicant/s set to: "${status}"`,
         title: 'Job Applicants',
       })
+
+      if (status == "Rejected") {
+        
+        setToastDeets({
+            type: 'info',
+            message: 'Rejection letters will be drafted for the selected applicants',
+            title: 'Job Applicants',
+          })
+    
+          apiService.post('letters/draft-letters', { letterType: 'Rejection', applicants: selectedApplicants, jobTitle: jobData.title})
+      }
     } catch (error) {
       console.error('Failed to update applicants:', error)
-      setToastDeets({
-        type: 'danger',
-        message: 'An error occurred: ' + error?.response?.data?.message || error.message,
-        title: 'Job Applicants',
-      })
-    }
-  }
-  // Reject selected added applicants back to available applicants
-  const bulkRejectApplicants = async () => {
-    const rejectedApplicants = addedApplicants.filter((applicant) =>
-      selectedAdded.includes(applicant.id),
-    )
-    // Prepare the payload for the API request
-    const payload = rejectedApplicants.map((applicant) => ({
-      candidateId: applicant.candidateId,
-      jobId: jobData.id,
-      interviewStatus: 'Rejected',
-    }))
-
-    try {
-      // Make the API call to bulk upsert
-      const result = await apiService.post('applicants/bulk-upsert', payload)
-
-      let mergedApplicants = result.data?.map((applicant) => {
-        return mergeApplicants(applicant.jobApplicant, rejectedApplicants)
-      })
-
-      // If the API call is successful, update the UI state
-      setAddedApplicants((prev) =>
-        prev.map((applicant) =>
-          selectedAdded.includes(applicant.id)
-            ? { ...applicant, interviewStatus: 'Rejected' }
-            : applicant,
-        ),
-      )
-      setSelectedAdded([])
-
-      setToastDeets({
-        type: 'success',
-        message: 'Selected candidates rejected.',
-        title: 'Job Applicants',
-      })
-    } catch (error) {
-      console.error('Failed to reject applicants:', error)
       setToastDeets({
         type: 'danger',
         message: 'An error occurred: ' + error?.response?.data?.message || error.message,
@@ -433,7 +408,7 @@ const JobApplicants = ({ jobData }) => {
 
       setToastDeets({
         type: 'success',
-        message: 'Selected candidate hired successfully.',
+        message: `${applicant.name} is now hired for the ${jobData.title} position.`,
         title: 'Hire Applicant',
       })
     } catch (error) {

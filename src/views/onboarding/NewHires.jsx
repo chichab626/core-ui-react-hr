@@ -212,7 +212,7 @@ const OnboardingPage = () => {
                   </CTableRow>
                 </CTableHead>
                 {loading ? (
-                  <CSpinner />
+                    <CTableBody><CTableRow><CTableDataCell><CSpinner /></CTableDataCell></CTableRow></CTableBody>                  
                 ) : (
                   <CTableBody>
                     {currentHires.map((hire) => (

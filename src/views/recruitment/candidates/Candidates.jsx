@@ -19,7 +19,7 @@ import {
   CSpinner,
 } from '@coreui/react'
 import { useNavigate } from 'react-router-dom' // Updated to useNavigate
-import { cilPen, cilTrash } from '@coreui/icons' // Import CoreUI icons
+import { cilPen, cilTrash, cilPaperPlane } from '@coreui/icons' // Import CoreUI icons
 import CIcon from '@coreui/icons-react' // Import the CIcon component
 import apiService from '../../../service/apiService'
 import ToastNotification from '../../../components/ToasterNotification.jsx'

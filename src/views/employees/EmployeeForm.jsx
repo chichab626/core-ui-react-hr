@@ -29,7 +29,6 @@ const EmployeeForm = ({ mode, employee, onSubmit, managers }) => {
       ...prevData,
       [fieldName]: value,
     }))
-    console.log(formData)
   }
   const onCancel = () => {
     navigate(-1)
@@ -249,15 +248,15 @@ const EditEmployeePage = () => {
 
   const handleEditEmployee = async (event, data) => {
     event.preventDefault()
-
+    console.log(data)
     try {
       const newData = {
         name: data.name,
         email: data.email,
         jobTitle: data.jobTitle,
         location: data.location,
-        salary: data.salary,
-        reportsTo: data.reportsTo,
+        salary: parseFloat(data.salary),
+        reportsTo: data.reportsTo.value,
       }
 
       await apiService.put('/employee/' + id, newData)

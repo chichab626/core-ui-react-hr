@@ -63,6 +63,10 @@ const EditCandidatePage = React.lazy(() => import('./views/recruitment/candidate
 
 const NewHires = React.lazy(() => import('./views/onboarding/NewHires'));
 const ChecklistPage = React.lazy(() => import('./views/onboarding/Checklist'));
+const LettersPage = React.lazy(() => import('./views/onboarding/Letters'));
+const AddLetterPage = React.lazy(() => import('./views/onboarding/LetterForm').then(module => ({ default: module.AddLetterPage })));
+const EditLetterPage = React.lazy(() => import('./views/onboarding/LetterForm').then(module => ({ default: module.EditLetterPage })));
+const ViewLetterPage = React.lazy(() => import('./views/onboarding/LetterForm').then(module => ({ default: module.ViewLetterPage })));
 
 const Employees = React.lazy(() => import('./views/employees/Employees'));
 const AddEmployeePage = React.lazy(() => import('./views/employees/EmployeeForm').then(module => ({ default: module.AddEmployeePage })));
@@ -85,6 +89,8 @@ const routes = [
     { path: '/recruitment/candidates/add', name: 'Add Candidate', element: AddCandidatePage },
     { path: '/recruitment/candidates/edit/:id', name: 'Edit Candidate', element: EditCandidatePage },
 
+    { path: '/hr/letters', name: 'Letters', element: LettersPage },
+    { path: '/hr/letters/edit/:id', name: 'Edit Letter', element: EditLetterPage },
     { path: '/hr/onboarding', name: 'New Hires', element: NewHires },
     { path: '/hr/onboarding/checklist/:id', name: 'Checklist', element: ChecklistPage },
 
