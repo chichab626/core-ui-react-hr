@@ -100,7 +100,7 @@ const LettersPage = () => {
   const updateLetterClick = async (letterId, status = 'Sent') => {
     try {
       setLoading(true) // Start loading while the letter is being sent
-      await apiService.put(`/letters/${letterId}`, { status: status })
+      await apiService.put(`/letters/${letterId}`, { status: status, dateSent: Date.now() })
 
       // Update letter status to "Sent"
       setLetters((prevLetters) =>
