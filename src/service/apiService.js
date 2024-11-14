@@ -1,13 +1,23 @@
 import axios from 'axios';
 
-// Create an Axios instance with default config
+// Check the current hostname to determine which API URL to use
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+// Set base URL dynamically based on environment (localhost or production)
+const baseURL = isLocal
+  ? 'http://localhost:8080/api'  // Local URL
+  : 'https://redesigned-zebra-q7qrxvp7rj5whx9r6-8080.app.github.dev/api';  // Production URL
+
+// Create the Axios client with the dynamic baseURL
 const apiClient = axios.create({
-  baseURL: 'http://localhost:8080/api', // Replace with your API base URL
+  baseURL: baseURL,
   timeout: 5000, // Set timeout
   headers: {
     'Content-Type': 'application/json', // Default content type for all requests
   },
 });
+
+
 
 // Request interceptor to include the token in headers
 apiClient.interceptors.request.use(

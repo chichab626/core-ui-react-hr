@@ -43,12 +43,14 @@ const _nav = [
     name: 'Jobs',
     to: '/recruitment/jobs',
     icon: <CIcon icon={cilBriefcase} customClassName="nav-icon" />,
+    
   },
   {
     component: CNavItem,
     name: 'Candidates',
     to: '/recruitment/candidates',
     icon: <CIcon icon={cilPeople} customClassName="nav-icon" />,
+    role: ['Administrator', 'HR', 'Manager', 'Candidate', 'Employee']
   },
   {
     component: CNavTitle,

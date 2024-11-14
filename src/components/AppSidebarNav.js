@@ -29,6 +29,9 @@ export const AppSidebarNav = ({ items }) => {
   }
 
   const navItem = (item, index, indent = false) => {
+    if (item?.role && !item?.role?.includes(localStorage.getItem('role'))) {
+      return
+    }
     const { component, name, badge, icon, ...rest } = item
     const Component = component
     return (
