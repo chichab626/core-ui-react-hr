@@ -37,7 +37,7 @@ const _nav = [
   {
     component: CNavItem,
     name: 'Messages',
-    to: '/dashboard',
+    to: '/hr/letters',
     icon: <CIcon icon={cilEnvelopeOpen} customClassName="nav-icon" />,
     badge: {
       color: 'info',

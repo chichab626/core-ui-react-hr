@@ -32,7 +32,7 @@ const JobForm = ({ mode, jobData }) => {
   const quillRef = useRef(null)
 
   const fetchHiringManagers = async () => {
-    const result = await apiService.get(`/employee`)
+    const result = await apiService.get(`/employee?managers`)
 
     let managersData = []
     result.forEach((element) => {

@@ -50,9 +50,9 @@ const Jobs = () => {
             `applicants/find-applications?email=${localStorage.getItem('email')}`,
           )
           setApplications(applications)
-        }
+        } 
 
-        const jobs = await apiService.get('/job?applicants=true')
+        const jobs = await apiService.get('/job?applicants=true' + (role === 'Manager'? `&managerId=${localStorage.getItem('employeeId')}` : ''))
 
         // Enrich job data with application details
         const enrichedJobs = jobs.map((job) => {

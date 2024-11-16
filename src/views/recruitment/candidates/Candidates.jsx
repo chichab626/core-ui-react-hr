@@ -19,7 +19,7 @@ import {
   CSpinner,
 } from '@coreui/react'
 import { useNavigate } from 'react-router-dom' // Updated to useNavigate
-import { cilPen, cilTrash, cilPaperPlane } from '@coreui/icons' // Import CoreUI icons
+import { cilPen, cilTrash, cilCheck } from '@coreui/icons' // Import CoreUI icons
 import CIcon from '@coreui/icons-react' // Import the CIcon component
 import apiService from '../../../service/apiService'
 import ToastNotification from '../../../components/ToasterNotification.jsx'
@@ -156,6 +156,7 @@ const Candidates = () => {
                         Location{' '}
                         {sortColumn === 'location' && (sortDirection === 'asc' ? '↑' : '↓')}
                       </CTableHeaderCell>
+                      <CTableHeaderCell>Employee</CTableHeaderCell>
                       <CTableHeaderCell>Actions</CTableHeaderCell>
                     </CTableRow>
                   </CTableHead>
@@ -168,32 +169,36 @@ const Candidates = () => {
                           <CTableDataCell>{candidate.phone}</CTableDataCell>
                           <CTableDataCell>{candidate.location}</CTableDataCell>
                           <CTableDataCell>
-                            {candidate.status !== 'Employee' && (
-                              <>
-                                <CButton
-                                  color="info"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    handleEditClick(candidate.id)
-                                  }}
-                                >
-                                  <CIcon icon={cilPen} />
-                                </CButton>{' '}
-                                <CButton
-                                  color="danger"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    alert('Remove clicked')
-                                  }}
-                                >
-                                  <CIcon icon={cilTrash} />
-                                </CButton>{' '}
-                              </>
+                            {candidate.status == 'Employee' ? (
+                              <CIcon icon={cilCheck} className="text-success" />
+                            ) : (
+                              ''
                             )}
+                          </CTableDataCell>
+                          <CTableDataCell>
+                            <>
+                              <CButton
+                                color="info"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleEditClick(candidate.id)
+                                }}
+                              >
+                                <CIcon icon={cilPen} />
+                              </CButton>{' '}
+                              <CButton
+                                color="danger"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  alert('Remove clicked')
+                                }}
+                              >
+                                <CIcon icon={cilTrash} />
+                              </CButton>{' '}
+                            </>
 
-                            {candidate.status === 'Employee' && <span>Go to Employees</span>}
                             {candidate.status === 'Hired' && (
                               <CButton
                                 color="success"

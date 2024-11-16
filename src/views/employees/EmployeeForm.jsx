@@ -191,7 +191,6 @@ const ViewEmployeePage = () => {
   useEffect(() => {
     const fetchEmployee = async () => {
       const result = await apiService.get(`/employee/${id}`)
-      // Mock data for testing
       const data = {
         employeeId: result.id,
         ...result,
@@ -230,7 +229,7 @@ const EditEmployeePage = () => {
         ...result,
       }
 
-      result = await apiService.get(`/employee?notId=${id}`)
+      result = await apiService.get(`/employee?notId=${id}&managers`)
 
       let managersData = [{ value: null, label: 'None' }]
 

@@ -21,7 +21,7 @@ const NewUserPage = () => {
   const location = useLocation()
 
   const roleOptions = [
-    { value: 'HRManager', label: 'HR Manager' },
+    { value: 'HR', label: 'HR Manager' },
     { value: 'Employee', label: 'Employee' },
     { value: 'Administrator', label: 'Administrator' },
   ]
@@ -198,7 +198,7 @@ const NewUserPage = () => {
                       name="location"
                       placeholder="Enter location"
                       value={externalEmail}
-                      onChange={(e) => setLocationField(e.target.value)}
+                      onChange={(e) => setExternalEmail(e.target.value)}
                       required
                     />
                   </CCol>
