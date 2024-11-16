@@ -72,7 +72,6 @@ const AppHeaderDropdown = () => {
               localStorage.removeItem('user');
               localStorage.removeItem('token');
               localStorage.removeItem('role');
-              console.log('why')
               navigate('/login')
             }}>
               <CIcon icon={cilLockLocked} className="me-2" />

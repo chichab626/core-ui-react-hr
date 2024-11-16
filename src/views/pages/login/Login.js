@@ -37,6 +37,7 @@ const Login = () => {
       const { token, role, user } = response;
       localStorage.setItem('authToken', token); // Store JWT token
       localStorage.setItem('role', role); // Store user role
+      localStorage.setItem('email', user.email)
       localStorage.setItem('user', JSON.stringify(user) )
 
       // Redirect user to the dashboard or home page (adjust as needed)

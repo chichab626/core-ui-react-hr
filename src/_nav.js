@@ -18,8 +18,8 @@ import {
   cilRoom,
   cilSettings,
   cilSpeedometer,
-  cilEnvelopeLetter,
   cilStar,
+  cilEnvelopeOpen
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 
@@ -35,6 +35,16 @@ const _nav = [
     // },
   },
   {
+    component: CNavItem,
+    name: 'Messages',
+    to: '/dashboard',
+    icon: <CIcon icon={cilEnvelopeOpen} customClassName="nav-icon" />,
+    badge: {
+      color: 'info',
+      text: 2,
+    },
+  },
+  {
     component: CNavTitle,
     name: 'Recruitment',
   },
@@ -43,14 +53,14 @@ const _nav = [
     name: 'Jobs',
     to: '/recruitment/jobs',
     icon: <CIcon icon={cilBriefcase} customClassName="nav-icon" />,
-    
+    role: ['Administrator', 'HR', 'Manager', 'Candidate', 'Employee']
   },
   {
     component: CNavItem,
     name: 'Candidates',
     to: '/recruitment/candidates',
     icon: <CIcon icon={cilPeople} customClassName="nav-icon" />,
-    role: ['Administrator', 'HR', 'Manager', 'Candidate', 'Employee']
+    role: ['Administrator', 'HR', 'Manager']
   },
   {
     component: CNavTitle,
@@ -72,11 +82,8 @@ const _nav = [
     component: CNavItem,
     name: 'Letters',
     to: '/hr/letters',
-    icon: <CIcon icon={cilEnvelopeLetter} customClassName="nav-icon" />,
-    badge: {
-      color: 'info',
-      text: 'new',
-    },
+    icon: <CIcon icon={cilNotes} customClassName="nav-icon" />,
+
   },
   {
     component: CNavTitle,

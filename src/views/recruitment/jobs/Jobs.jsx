@@ -17,11 +17,13 @@ import {
   CCardHeader,
   CRow,
   CSpinner,
+  CCallout,
 } from '@coreui/react'
 import { useNavigate } from 'react-router-dom'
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilTrash } from '@coreui/icons'
 import apiService from '../../../service/apiService.js'
+import ToastNotification from '../../../components/ToasterNotification.jsx'
 
 const Jobs = () => {
   const [data, setData] = useState([])
@@ -31,19 +33,46 @@ const Jobs = () => {
   const [sortColumn, setSortColumn] = useState('title')
   const [sortDirection, setSortDirection] = useState('asc')
   const [loading, setLoading] = useState(true)
+  const [role, setRole] = useState(localStorage.getItem('role'))
+  const [toastDeets, setToastDeets] = useState({})
+  const [applications, setApplications] = useState([])
+
+  const navigate = useNavigate()
+
+  const allowedUsers = ['Administrator', 'HR', 'Manager']
 
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const response = await apiService.get('/job?applicants=true')
-        setData(response)
-        console.log(response)
+        let applications = []
+        if (role === 'Employee') {
+          applications = await apiService.get(
+            `applicants/find-applications?email=${localStorage.getItem('email')}`,
+          )
+          setApplications(applications)
+        }
+
+        const jobs = await apiService.get('/job?applicants=true')
+
+        // Enrich job data with application details
+        const enrichedJobs = jobs.map((job) => {
+          const matchingApp = applications.find((app) => app.jobId === job.id)
+          return {
+            ...job,
+            hasApplied: Boolean(matchingApp),
+            applicationDetails: matchingApp || null, // Attach application details if found
+          }
+        })
+
+        setData(enrichedJobs)
+        console.log(enrichedJobs)
       } catch (error) {
         console.error('Error fetching jobs:', error)
       } finally {
         setLoading(false)
       }
     }
+
     fetchJobs()
   }, [])
 
@@ -80,8 +109,6 @@ const Jobs = () => {
     setData(sortedData)
   }
 
-  const navigate = useNavigate()
-
   const handleAddJobClick = () => {
     navigate('/recruitment/jobs/add')
   }
@@ -94,8 +121,66 @@ const Jobs = () => {
     navigate(`/recruitment/jobs/applicants/${jobId}`)
   }
 
+  const handleApplyClick = async (jobId) => {
+    // Redirect to application page or handle application logic
+    console.log(`Applying for job ID: ${jobId}`)
+    const storedUserEmail = localStorage.getItem('email')
+
+    if (!storedUserEmail) {
+      setToastDeets({
+        type: 'danger',
+        message: 'You need to login to apply',
+        title: 'Apply to Job',
+      })
+      return
+    }
+    try {
+      const application = await apiService.post('/applicants/apply', {
+        jobId,
+        email: storedUserEmail,
+      })
+      setToastDeets({
+        type: 'success',
+        message: 'Application Sent',
+        title: 'Apply to Job',
+      })
+
+      setApplications((prev) =>
+        prev.map((app) =>
+          app.jobId === application.jobId
+            ? { ...app, ...application } // Update the application object with new values
+            : app,
+        ),
+      )
+
+
+
+      setData((prev) => {
+        console.log('prev', application)
+        return prev.map((one) => {
+            if (one.id === application.jobId) {
+                const newOne = { ...one, hasApplied: true, applicationDetails: application }
+                console.log('newOne', newOne)
+                return newOne
+            } else {
+                console.log('oldOne', one)
+                return one
+            }
+        })
+    })
+
+    } catch {
+      setToastDeets({
+        type: 'danger',
+        message: 'An error occurred: ' + error?.response?.data?.message || error.message,
+        title: 'Apply to Job',
+      })
+    }
+  }
+
   return (
     <div>
+      <ToastNotification deets={toastDeets} />
       <CCard>
         <CCardHeader as="h5" className="text-center">
           Jobs
@@ -114,73 +199,133 @@ const Jobs = () => {
             />
           </CRow>
           <CRow>
-            
-            {loading ? <CSpinner /> : <><CTable hover>
-              <CTableHead>
-                <CTableRow>
-                  <CTableHeaderCell onClick={() => handleSort('title')}>
-                    Job Title {sortColumn === 'title' && (sortDirection === 'asc' ? '↑' : '↓')}
-                  </CTableHeaderCell>
-                  <CTableHeaderCell onClick={() => handleSort('location')}>
-                    Location {sortColumn === 'location' && (sortDirection === 'asc' ? '↑' : '↓')}
-                  </CTableHeaderCell>
-                  <CTableHeaderCell onClick={() => handleSort('salary')}>
-                    Salary {sortColumn === 'salary' && (sortDirection === 'asc' ? '↑' : '↓')}
-                  </CTableHeaderCell>
-                  <CTableHeaderCell onClick={() => handleSort('openPositions')}>
-                    Open Positions{' '}
-                    {sortColumn === 'openPositions' && (sortDirection === 'asc' ? '↑' : '↓')}
-                  </CTableHeaderCell>
-                  <CTableHeaderCell>Actions</CTableHeaderCell>
-                </CTableRow>
-              </CTableHead>
-              <CTableBody>
-                {currentData.length > 0 ? (
-                  currentData.map((row) => (
-                    <CTableRow key={row.id}>
-                      <CTableDataCell>{row.title}</CTableDataCell>
-                      <CTableDataCell>{row.location}</CTableDataCell>
-                      <CTableDataCell>{`$${parseFloat(row.salary).toLocaleString()}`}</CTableDataCell>
-                      <CTableDataCell>{row.openPositions}</CTableDataCell>
-                      <CTableDataCell>
-                        <CButton
-                          color="secondary"
-                          className="position-relative me-3"
-                          onClick={() => handleApplicantClick(row.id)}
-                        >
-                          Applicants
-                          <CBadge
-                            color={row.applicantCount > 0 ? 'success' : 'danger'}
-                            position="top-start"
-                            shape="rounded-pill"
-                          >
-                            {row.applicantCount}
-                          </CBadge>
-                        </CButton>
-
-                        <CButton
-                          color="info"
-                          className="me-2"
-                          onClick={() => handleEditClick(row.id)}
-                        >
-                          <CIcon icon={cilPencil} />
-                        </CButton>
-                        <CButton color="danger" onClick={() => handleDeleteClick(row.id)}>
-                          <CIcon icon={cilTrash} />
-                        </CButton>
-                      </CTableDataCell>
+            {loading ? (
+              <CSpinner />
+            ) : (
+              <>
+                <CTable hover>
+                  <CTableHead>
+                    <CTableRow>
+                      <CTableHeaderCell onClick={() => handleSort('title')}>
+                        Job Title {sortColumn === 'title' && (sortDirection === 'asc' ? '↑' : '↓')}
+                      </CTableHeaderCell>
+                      <CTableHeaderCell onClick={() => handleSort('location')}>
+                        Location{' '}
+                        {sortColumn === 'location' && (sortDirection === 'asc' ? '↑' : '↓')}
+                      </CTableHeaderCell>
+                      <CTableHeaderCell onClick={() => handleSort('salary')}>
+                        Salary {sortColumn === 'salary' && (sortDirection === 'asc' ? '↑' : '↓')}
+                      </CTableHeaderCell>
+                      <CTableHeaderCell onClick={() => handleSort('openPositions')}>
+                        Open Positions{' '}
+                        {sortColumn === 'openPositions' && (sortDirection === 'asc' ? '↑' : '↓')}
+                      </CTableHeaderCell>
+                      {role && <CTableHeaderCell>Actions</CTableHeaderCell>}
                     </CTableRow>
-                  ))
-                ) : (
-                  <CTableRow>
-                    <CTableDataCell colSpan="5" className="text-center">
-                      No Jobs Found
-                    </CTableDataCell>
-                  </CTableRow>
-                )}
-              </CTableBody>
-            </CTable></>}
+                  </CTableHead>
+                  <CTableBody>
+                    {currentData.length > 0 ? (
+                      currentData.map((row) => (
+                        <CTableRow key={row.id}>
+                          <CTableDataCell>
+                            <CButton
+                              color="link" // Sets the button to look like a link
+                              onClick={() => navigate(`/recruitment/jobs/view/${row.id}`)}
+                              className="p-0" // Optional: removes padding to make it look more like a link
+                            >
+                              {row.title}
+                            </CButton>
+                          </CTableDataCell>
+                          <CTableDataCell>{row.location}</CTableDataCell>
+                          <CTableDataCell>{`$${parseFloat(row.salary).toLocaleString()}`}</CTableDataCell>
+                          <CTableDataCell>{row.openPositions}</CTableDataCell>
+                          <CTableDataCell>
+                            {allowedUsers.includes(role) ? (
+                              <CButton
+                                color="secondary"
+                                className="position-relative me-3"
+                                onClick={() => handleApplicantClick(row.id)}
+                              >
+                                Applicants
+                                <CBadge
+                                  color={row.applicantCount > 0 ? 'success' : 'danger'}
+                                  position="top-start"
+                                  shape="rounded-pill"
+                                >
+                                  {row.applicantCount}
+                                </CBadge>
+                              </CButton>
+                            ) : role === 'Employee' && row.openPositions > 1 ? (
+                              row.hasApplied ? (
+                                row.applicationDetails?.interviewStatus === 'Hired' ? (
+                                  <CCallout color="success" style={{'--cui-callout-padding-y': '3px'}}>
+                                    Hired last{' '}
+                                    {new Date(row.applicationDetails?.appliedAt).toLocaleDateString(
+                                      'en-US',
+                                      {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric',
+                                      },
+                                    )}
+                                  </CCallout>
+                                ) : row.applicationDetails?.interviewStatus === 'Withdrawn' ||
+                                  row.applicationDetails?.interviewStatus === 'Rejected' ? (
+                                    
+                                  <CButton
+                                    color="secondary"
+                                    onClick={() => handleApplyClick(row.id)}
+                                  >
+                                    Apply again
+                                  </CButton>
+                                ) : (
+                                    <CCallout color="secondary" style={{'--cui-callout-padding-y': '3px'}}>
+                                    Applied on{' '}
+                                    {new Date(row.applicationDetails?.appliedAt).toLocaleDateString(
+                                      'en-US',
+                                      {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric',
+                                      },
+                                    )}
+                                  </CCallout>
+                                )
+                              ) : (
+                                <CButton color="primary" onClick={() => handleApplyClick(row.id)}>
+                                  Apply
+                                </CButton>
+                              )
+                            ) : null}
 
+                            {allowedUsers.includes(role) && (
+                              <>
+                                <CButton
+                                  color="info"
+                                  className="me-2"
+                                  onClick={() => handleEditClick(row.id)}
+                                >
+                                  <CIcon icon={cilPencil} />
+                                </CButton>
+                                <CButton color="danger" onClick={() => handleDeleteClick(row.id)}>
+                                  <CIcon icon={cilTrash} />
+                                </CButton>
+                              </>
+                            )}
+                          </CTableDataCell>
+                        </CTableRow>
+                      ))
+                    ) : (
+                      <CTableRow>
+                        <CTableDataCell colSpan="5" className="text-center">
+                          No Jobs Found
+                        </CTableDataCell>
+                      </CTableRow>
+                    )}
+                  </CTableBody>
+                </CTable>
+              </>
+            )}
           </CRow>
           <CRow>
             <CPagination aria-label="Page navigation">
@@ -207,13 +352,15 @@ const Jobs = () => {
               </CPaginationItem>
             </CPagination>
           </CRow>
-          <CRow>
-            <div className="d-grid gap-2 col-6 mx-auto">
-              <CButton color="primary" onClick={() => handleAddJobClick()}>
-                Add Job
-              </CButton>
-            </div>
-          </CRow>
+          {allowedUsers.includes(role) && (
+            <CRow>
+              <div className="d-grid gap-2 col-6 mx-auto">
+                <CButton color="primary" onClick={() => handleAddJobClick()}>
+                  Add Job
+                </CButton>
+              </div>
+            </CRow>
+          )}
         </CCardBody>
       </CCard>
     </div>

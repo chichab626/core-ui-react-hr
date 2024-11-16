@@ -38,7 +38,14 @@ import {
   CBadge,
   CTooltip,
 } from '@coreui/react'
-import { cilCalendar, cilCheckCircle, cilPencil, cilThumbUp, cilNoteAdd } from '@coreui/icons'
+import {
+  cilCalendar,
+  cilCheckCircle,
+  cilPencil,
+  cilThumbUp,
+  cilNoteAdd,
+  cilCheck,
+} from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import apiService from '../../../service/apiService'
 import ToastNotification from '../../../components/ToasterNotification.jsx'
@@ -169,6 +176,7 @@ const JobApplicants = ({ jobData }) => {
             candidateId: user.id,
             name: user.name,
             email: user.email || user.externalEmail,
+            userId: user.userId,
           }))
         setAvailableApplicants(availCandidates)
       } catch (err) {
@@ -221,21 +229,25 @@ const JobApplicants = ({ jobData }) => {
       applicant.interviewStatus = status
       apiService.put('/applicants/' + applicant.id, applicant)
       setSelectedApplicant(applicant)
-      if (status == "Job Offer") {
+      if (status == 'Job Offer') {
         setToastDeets({
-            type: 'info',
-            message: `A job offer letter will be drafted for ${applicant.name}`,
-            title: 'Update Status',
-          })
+          type: 'info',
+          message: `A job offer letter will be drafted for ${applicant.name}`,
+          title: 'Update Status',
+        })
 
-          apiService.post('letters/draft-letters', { letterType: 'Job Offer', applicants: [applicant], jobTitle: jobData.title})
+        apiService.post('letters/draft-letters', {
+          letterType: 'Job Offer',
+          applicants: [applicant],
+          jobTitle: jobData.title,
+        })
       }
     } catch (err) {
-        setToastDeets({
-            type: 'danger',
-            message: 'An error occurred: ' + err?.response?.data?.message || err.message,
-            title: 'Update Status',
-          })
+      setToastDeets({
+        type: 'danger',
+        message: 'An error occurred: ' + err?.response?.data?.message || err.message,
+        title: 'Update Status',
+      })
     } finally {
       setLoading(false)
     }
@@ -247,12 +259,12 @@ const JobApplicants = ({ jobData }) => {
     )
 
     if (selectedApplicants.length < 1) {
-        setToastDeets({
-            type: 'warning',
-            message: 'No applicants selected',
-            title: 'Job Applicants',
-          })
-        return
+      setToastDeets({
+        type: 'warning',
+        message: 'No applicants selected',
+        title: 'Job Applicants',
+      })
+      return
     }
 
     // Prepare the payload for the API request
@@ -282,15 +294,18 @@ const JobApplicants = ({ jobData }) => {
         title: 'Job Applicants',
       })
 
-      if (status == "Rejected") {
-        
+      if (status == 'Rejected') {
         setToastDeets({
-            type: 'info',
-            message: 'Rejection letters will be drafted for the selected applicants',
-            title: 'Job Applicants',
-          })
-    
-          apiService.post('letters/draft-letters', { letterType: 'Rejection', applicants: selectedApplicants, jobTitle: jobData.title})
+          type: 'info',
+          message: 'Rejection letters will be drafted for the selected applicants',
+          title: 'Job Applicants',
+        })
+
+        apiService.post('letters/draft-letters', {
+          letterType: 'Rejection',
+          applicants: selectedApplicants,
+          jobTitle: jobData.title,
+        })
       }
     } catch (error) {
       console.error('Failed to update applicants:', error)
@@ -375,7 +390,7 @@ const JobApplicants = ({ jobData }) => {
     const payload = hired.map((applicant) => ({
       candidateId: applicant.candidateId,
       jobId: jobData.id,
-      interviewStatus: 'Hired',
+      interviewStatus: 'Hired'
     }))
 
     // Prepare the payload for the API request
@@ -550,7 +565,7 @@ const JobApplicants = ({ jobData }) => {
                                       if (e.target.checked) {
                                         setSelectedAvailable(
                                           filteredAvailableApplicants.map(
-                                            (applicant) => applicant.id,
+                                            (applicant) => applicant.candidateId,
                                           ),
                                         )
                                       } else {
@@ -561,6 +576,7 @@ const JobApplicants = ({ jobData }) => {
                                 </CTableHeaderCell>
                                 <CTableHeaderCell>Name</CTableHeaderCell>
                                 <CTableHeaderCell>Email</CTableHeaderCell>
+                                <CTableHeaderCell>Employee</CTableHeaderCell>
                               </CTableRow>
                             </CTableHead>
                             <CTableBody>
@@ -580,6 +596,13 @@ const JobApplicants = ({ jobData }) => {
                                   </CTableDataCell>
                                   <CTableDataCell>{applicant.name}</CTableDataCell>
                                   <CTableDataCell>{applicant.email}</CTableDataCell>
+                                  <CTableDataCell>
+                                    {applicant.userId ? (
+                                      <CIcon icon={cilCheck} className="text-success" />
+                                    ) : (
+                                      ''
+                                    )}
+                                  </CTableDataCell>
                                 </CTableRow>
                               ))}
                             </CTableBody>
