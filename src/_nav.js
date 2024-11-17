@@ -79,6 +79,7 @@ const _nav = [
     name: 'Employees',
     to: '/hr/employees',
     icon: <CIcon icon={cilBolt} customClassName="nav-icon" />,
+    role: ['Administrator', 'HR', 'Manager']
   },
   {
     component: CNavItem,
@@ -97,6 +98,7 @@ const _nav = [
     name: 'Profile',
     to: '/admin/user/me',
     icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
+    role: ['Manager', 'Employee']
   },
   {
     component: CNavItem,
@@ -109,6 +111,7 @@ const _nav = [
     name: 'Register',
     to: '/admin/user/add',
     icon: <CIcon icon={cilBook} customClassName="nav-icon" />,
+    role: ['Administrator']
   },
 
 // above are the custom menu items

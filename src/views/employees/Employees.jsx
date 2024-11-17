@@ -29,14 +29,25 @@ const Employees = () => {
   const [sortColumn, setSortColumn] = useState('name')
   const [sortDirection, setSortDirection] = useState('asc')
   const navigate = useNavigate() // Use useNavigate
+  const loggedUser = {
+    employeeId: localStorage.getItem('employeeId'),
+    email: localStorage.getItem('email'),
+    role: localStorage.getItem('role'),
+    profile: JSON.parse(localStorage.getItem('profile')),
+  }
 
   // Fetch data from the API
   useEffect(() => {
     const fetchData = async () => {
       try {
         const result = await apiService.get('/employee')
+        let filteredData = []
 
-        setData(result)
+        if (loggedUser.role === 'Manager') {
+            filteredData = result.filter((item) => item.reportsTo == loggedUser.employeeId || item.id == loggedUser.employeeId)
+        }
+        
+        setData(filteredData)
       } catch (error) {
         console.error('Error fetching employees:', error)
       }

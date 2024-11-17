@@ -35,6 +35,7 @@ const CandidateForm = ({ mode, candidateData }) => {
   const [loading, setLoading] = useState(false)
   const [inputMode, setInputMode] = useState('manual')
   const [toastDeets, setToastDeets] = useState({})
+  const [resumeFilename, setResumeFilename] = useState('');
 
   const navigate = useNavigate()
 
@@ -50,6 +51,7 @@ const CandidateForm = ({ mode, candidateData }) => {
           ? candidateData.experiences
           : [{ position: '', company: '', startDate: '', endDate: '', description: '' }],
       )
+      setResumeFilename(candidateData.resume)
     }
   }, [mode, candidateData])
 
@@ -75,7 +77,7 @@ const CandidateForm = ({ mode, candidateData }) => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
-    const candidate = { name, email, location: location, phone, profileSummary, experiences }
+    const candidate = { name, email, location: location, phone, profileSummary, experiences, resume: resumeFilename }
 
     try {
       if (mode === 'add') {
@@ -321,8 +323,20 @@ const CandidateForm = ({ mode, candidateData }) => {
               ) : (
                 <CCardBody className="mx-5">
                   <CRow className="mb-3">
-                    <CFormInput type="file" accept=".pdf, .doc, .docx" required />
+                  <CFormInput
+  type="file"
+  accept=".pdf, .doc, .docx"
+  required
+  onChange={(e) => setResumeFilename(e.target.files[0]?.name || '')}
+/>
                   </CRow>
+                  {resumeFilename && (
+  <CRow className="mb-3">
+    <CCol>
+      <div>Uploaded File: {resumeFilename}</div>
+    </CCol>
+  </CRow>
+)}
                 </CCardBody>
               )}
             </CCard>
@@ -357,8 +371,8 @@ const AddCandidatePage = () => {
   return <CandidateForm mode="add" />
 }
 
-const EditCandidatePage = () => {
-  const { id } = useParams()
+const EditCandidatePage = ({candidateId}) => {
+  const  id  = candidateId ? candidateId : useParams()
   const [candidateData, setCandidateData] = useState(null)
 
   useEffect(() => {
@@ -395,4 +409,4 @@ const ViewCandidatePage = () => {
   )
 }
 
-export { AddCandidatePage, EditCandidatePage, ViewCandidatePage }
+export { AddCandidatePage, EditCandidatePage, ViewCandidatePage, CandidateForm }

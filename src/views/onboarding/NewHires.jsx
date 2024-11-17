@@ -40,6 +40,7 @@ const OnboardingPage = () => {
   const itemsPerPage = 5
   const navigate = useNavigate()
   const loggedUser = {
+    employeeId: localStorage.getItem('employeeId'),
     email: localStorage.getItem('email'),
     role: localStorage.getItem('role'),
     profile: JSON.parse(localStorage.getItem('profile')),
@@ -50,7 +51,15 @@ const OnboardingPage = () => {
     const fetchNewHires = async () => {
       try {
         const data = await apiService.get('/checklist/new-hires')
-        const formattedData = data.map((item) => ({
+        let filteredData = data
+
+        if (loggedUser.role === 'Employee') {
+            filteredData = data.filter((item) => item.employeeId == loggedUser.employeeId)
+        } else if (loggedUser.role === 'Manager') {
+            filteredData = data.filter((item) => item.employee.reportsTo == loggedUser.employeeId)
+        }
+        
+        const formattedData = filteredData.map((item) => ({
           id: item.id,
           employeeId: item.employeeId,
           name: item.employee.name,
