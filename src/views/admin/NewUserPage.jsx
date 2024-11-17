@@ -87,7 +87,7 @@ const NewUserPage = () => {
             jobId : newUser.jobId,
             companyEmail : newUser.email,
             password
-        }], jobTitle: jobTitle})
+        }], jobTitle: jobTitle, from : localStorage.getItem('email')})
       }
 
       notify(messageType, successMessage, 'Create User')

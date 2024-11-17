@@ -34,7 +34,7 @@ const Login = () => {
       const response = await apiService.post('/auth/login', { email, password });
 
       // On success, save the token and role in localStorage
-      const { token, role, user, employeeId } = response;
+      const { token, role, user, employeeId,  candidate, employee } = response;
 
       localStorage.setItem('authToken', token); // Store JWT token
       localStorage.setItem('role', role); // Store user role
@@ -42,7 +42,8 @@ const Login = () => {
       localStorage.setItem('employeeId', employeeId)
 
       localStorage.setItem('user', JSON.stringify(user) )
-      
+      localStorage.setItem('profile', JSON.stringify({candidate, employee}) )
+
 
       // Redirect user to the dashboard or home page (adjust as needed)
       navigate('/dashboard'); // You can replace '/dashboard' with your desired route

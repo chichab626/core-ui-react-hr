@@ -39,6 +39,11 @@ const OnboardingPage = () => {
   const [toastDeets, setToastDeets] = useState(null)
   const itemsPerPage = 5
   const navigate = useNavigate()
+  const loggedUser = {
+    email: localStorage.getItem('email'),
+    role: localStorage.getItem('role'),
+    profile: JSON.parse(localStorage.getItem('profile')),
+  }
 
   // Fetch new hires data from API on component load
   useEffect(() => {

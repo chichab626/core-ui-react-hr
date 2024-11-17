@@ -226,15 +226,9 @@ const Jobs = () => {
                   <CTableBody>
                     {currentData.length > 0 ? (
                       currentData.map((row) => (
-                        <CTableRow key={row.id}>
+                        <CTableRow key={row.id} onClick={() => navigate(`/recruitment/jobs/view/${row.id}`)}>
                           <CTableDataCell>
-                            <CButton
-                              color="link" // Sets the button to look like a link
-                              onClick={() => navigate(`/recruitment/jobs/view/${row.id}`)}
-                              className="p-0" // Optional: removes padding to make it look more like a link
-                            >
-                              {row.title}
-                            </CButton>
+                            {row.title}
                           </CTableDataCell>
                           <CTableDataCell>{row.location}</CTableDataCell>
                           <CTableDataCell>{`$${parseFloat(row.salary).toLocaleString()}`}</CTableDataCell>

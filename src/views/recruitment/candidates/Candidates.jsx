@@ -35,6 +35,11 @@ const Candidates = () => {
   const navigate = useNavigate() // Use useNavigate
   const [toastDeets, setToastDeets] = useState({})
   const [loading, setLoading] = useState(true)
+  const loggedUser = {
+    email: localStorage.getItem('email'),
+    role: localStorage.getItem('role'),
+    profile: JSON.parse(localStorage.getItem('profile')),
+  }
 
   // Fetch data from the API
   useEffect(() => {
@@ -69,10 +74,6 @@ const Candidates = () => {
 
   const totalPages = Math.ceil(filteredData.length / rowsPerPage)
 
-  // Handle row click to navigate to another page
-  const handleRowClick = (id) => {
-    navigate(`/todo/page/${id}`)
-  }
 
   // Sorting functionality
   const handleSort = (column) => {
@@ -94,6 +95,10 @@ const Candidates = () => {
 
   const handleEditClick = (id) => {
     navigate(`/recruitment/candidates/edit/${id}`)
+  }
+
+  const handleRowClick = (id) => {
+    navigate(`/recruitment/candidates/view/${id}`)
   }
 
   const handleRegisterClick = async (candidate) => {
@@ -163,7 +168,7 @@ const Candidates = () => {
                   <CTableBody>
                     {currentData.length > 0 ? (
                       currentData.map((candidate) => (
-                        <CTableRow key={candidate.id} style={{ cursor: 'pointer' }}>
+                        <CTableRow key={candidate.id} style={{ cursor: 'pointer' }} onClick={() => handleRowClick(candidate.id)}>
                           <CTableDataCell>{candidate.name}</CTableDataCell>
                           <CTableDataCell>{candidate.email}</CTableDataCell>
                           <CTableDataCell>{candidate.phone}</CTableDataCell>
@@ -176,41 +181,44 @@ const Candidates = () => {
                             )}
                           </CTableDataCell>
                           <CTableDataCell>
-                            <>
-                              <CButton
-                                color="info"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  handleEditClick(candidate.id)
-                                }}
-                              >
-                                <CIcon icon={cilPen} />
-                              </CButton>{' '}
-                              <CButton
-                                color="danger"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  alert('Remove clicked')
-                                }}
-                              >
-                                <CIcon icon={cilTrash} />
-                              </CButton>{' '}
-                            </>
-
-                            {candidate.status === 'Hired' && (
-                              <CButton
-                                color="success"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  handleRegisterClick(candidate)
-                                }}
-                              >
-                                Start Onboarding
-                              </CButton>
+                            {candidate.status === 'Hired' && (loggedUser.role === 'HR' || loggedUser.role === 'Manager') && (
+                              <>
+                                <CButton
+                                  color="info"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleEditClick(candidate.id)
+                                  }}
+                                >
+                                  <CIcon icon={cilPen} />
+                                </CButton>{' '}
+                                <CButton
+                                  color="danger"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    alert('Remove clicked')
+                                  }}
+                                >
+                                  <CIcon icon={cilTrash} />
+                                </CButton>{' '}
+                              </>
                             )}
+
+                            {candidate.status === 'Hired' &&
+                              loggedUser.role === 'Administrator' && (
+                                <CButton
+                                  color="success"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleRegisterClick(candidate)
+                                  }}
+                                >
+                                  New Hire
+                                </CButton>
+                              )}
                           </CTableDataCell>
                         </CTableRow>
                       ))

@@ -37,12 +37,13 @@ const _nav = [
   {
     component: CNavItem,
     name: 'Messages',
-    to: '/hr/letters',
+    to: '/hr/messages',
     icon: <CIcon icon={cilEnvelopeOpen} customClassName="nav-icon" />,
     badge: {
       color: 'info',
       text: 2,
     },
+    role: ['Administrator', 'HR', 'Manager', 'Candidate', 'Employee']
   },
   {
     component: CNavTitle,
@@ -53,7 +54,7 @@ const _nav = [
     name: 'Jobs',
     to: '/recruitment/jobs',
     icon: <CIcon icon={cilBriefcase} customClassName="nav-icon" />,
-    role: ['Administrator', 'HR', 'Manager', 'Candidate', 'Employee']
+    role: ['Administrator', 'HR', 'Manager', 'Candidate', 'Employee', null]
   },
   {
     component: CNavItem,
@@ -71,6 +72,7 @@ const _nav = [
     name: 'Onboarding',
     to: '/hr/onboarding',
     icon: <CIcon icon={cilFork} customClassName="nav-icon" />,
+    role: ['Administrator', 'HR', 'Manager', 'Employee']
   },
   {
     component: CNavItem,
@@ -83,6 +85,7 @@ const _nav = [
     name: 'Letters',
     to: '/hr/letters',
     icon: <CIcon icon={cilNotes} customClassName="nav-icon" />,
+    role: ['Administrator']
 
   },
   {

@@ -39,7 +39,7 @@ const CandidateForm = ({ mode, candidateData }) => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (mode === 'edit' && candidateData) {
+    if (mode !== 'add' && candidateData) {
       setName(candidateData.name || '')
       setEmail(candidateData.email || candidateData.externalEmail || '')
       setLocation(candidateData.location || '')
@@ -97,7 +97,7 @@ const CandidateForm = ({ mode, candidateData }) => {
       }
       //navigate('/candidates') // Redirect after submit
     } catch (error) {
-        console.log(error)
+      console.log(error)
       setToastDeets({
         type: 'danger',
         message: 'An error occurred: ' + error?.response?.data?.message || error.message,
@@ -127,6 +127,7 @@ const CandidateForm = ({ mode, candidateData }) => {
                   placeholder="Name"
                   label="Name"
                   required
+                  readOnly={mode === 'view'}
                 />
               </CCol>
               <CCol>
@@ -137,6 +138,7 @@ const CandidateForm = ({ mode, candidateData }) => {
                   placeholder="Email"
                   label="Email"
                   required
+                  readOnly={mode === 'view'}
                 />
               </CCol>
             </CRow>
@@ -150,6 +152,7 @@ const CandidateForm = ({ mode, candidateData }) => {
                   placeholder="Phone"
                   label="Phone"
                   required
+                  readOnly={mode === 'view'}
                 />
               </CCol>
               <CCol>
@@ -160,6 +163,7 @@ const CandidateForm = ({ mode, candidateData }) => {
                   placeholder="Location"
                   label="Location"
                   required
+                  readOnly={mode === 'view'}
                 />
               </CCol>
             </CRow>
@@ -176,6 +180,7 @@ const CandidateForm = ({ mode, candidateData }) => {
                       value={profileSummary}
                       onChange={setProfileSummary}
                       placeholder="Profile Summary"
+                      readOnly={mode === 'view'}
                     />
                   </CCol>
                 </CRow>
@@ -189,7 +194,11 @@ const CandidateForm = ({ mode, candidateData }) => {
 
               <CCardBody className="mx-3">
                 <CRow className="my-3">
-                  <CButtonGroup role="group" aria-label="Basic radio toggle button group">
+                  <CButtonGroup
+                    role="group"
+                    aria-label="Basic radio toggle button group"
+                    readOnly={mode === 'view'}
+                  >
                     <CFormCheck
                       type="radio"
                       button={{ color: 'primary', variant: 'outline' }}
@@ -199,6 +208,7 @@ const CandidateForm = ({ mode, candidateData }) => {
                       label="Manual Input"
                       checked={inputMode === 'manual'}
                       onChange={() => setInputMode('manual')}
+                      disabled={mode==='view'}
                     />
                     <CFormCheck
                       type="radio"
@@ -209,6 +219,7 @@ const CandidateForm = ({ mode, candidateData }) => {
                       label="Upload Resume"
                       checked={inputMode === 'upload'}
                       onChange={() => setInputMode('upload')}
+                      disabled={mode==='view'}
                     />
                   </CButtonGroup>
                 </CRow>
@@ -230,6 +241,7 @@ const CandidateForm = ({ mode, candidateData }) => {
                               placeholder="Position Title"
                               label="Position Title"
                               required
+                              readOnly={mode === 'view'}
                             />
                           </CCol>
                           <CCol>
@@ -242,6 +254,7 @@ const CandidateForm = ({ mode, candidateData }) => {
                               placeholder="Company"
                               label="Company"
                               required
+                              readOnly={mode === 'view'}
                             />
                           </CCol>
                         </CRow>
@@ -255,6 +268,7 @@ const CandidateForm = ({ mode, candidateData }) => {
                                 handleExperienceChange(index, 'startDate', e.target.value)
                               }
                               required
+                              readOnly={mode === 'view'}
                             />
                           </CCol>
                           <CCol>
@@ -266,6 +280,7 @@ const CandidateForm = ({ mode, candidateData }) => {
                                 handleExperienceChange(index, 'endDate', e.target.value)
                               }
                               required
+                              readOnly={mode === 'view'}
                             />
                           </CCol>
                         </CRow>
@@ -277,6 +292,7 @@ const CandidateForm = ({ mode, candidateData }) => {
                                 handleExperienceChange(index, 'description', value)
                               }
                               placeholder="Description"
+                              readOnly={mode === 'view'}
                             />
                           </CCol>
                         </CRow>
@@ -295,9 +311,11 @@ const CandidateForm = ({ mode, candidateData }) => {
                     ))}
                   </CRow>
                   <CRow className="d-grid gap-2 col-6 mx-auto">
-                    <CButton color="info" onClick={addExperience} className="mb-3" size="sm">
-                      Add Experience
-                    </CButton>
+                    {mode !== 'view' && (
+                      <CButton color="info" onClick={addExperience} className="mb-3" size="sm">
+                        Add Experience
+                      </CButton>
+                    )}
                   </CRow>
                 </CCardBody>
               ) : (
@@ -313,18 +331,20 @@ const CandidateForm = ({ mode, candidateData }) => {
 
         <CRow className="my-3">
           <CCol>
-          <CButton color="danger" onClick={() => navigate(-1)} className="me-2">
-                  Back
-                </CButton>
-            <CButton type="submit" color="primary" className="me-2">
-              {loading ? (
-                <CSpinner size="sm" />
-              ) : mode === 'add' ? (
-                'Add Candidate'
-              ) : (
-                'Update Candidate'
-              )}
+            <CButton color="danger" onClick={() => navigate(-1)} className="me-2">
+              Back
             </CButton>
+            {mode !== 'view' && (
+              <CButton type="submit" color="primary" className="me-2">
+                {loading ? (
+                  <CSpinner size="sm" />
+                ) : mode === 'add' ? (
+                  'Add Candidate'
+                ) : (
+                  'Update Candidate'
+                )}
+              </CButton>
+            )}
           </CCol>
         </CRow>
       </CForm>
@@ -356,4 +376,23 @@ const EditCandidatePage = () => {
   )
 }
 
-export { AddCandidatePage, EditCandidatePage }
+const ViewCandidatePage = () => {
+  const { id } = useParams()
+  const [candidateData, setCandidateData] = useState(null)
+
+  useEffect(() => {
+    const fetchCandidate = async () => {
+      const response = await apiService.get('/candidates/' + id)
+      setCandidateData(response)
+    }
+    fetchCandidate()
+  }, [id])
+
+  return candidateData ? (
+    <CandidateForm mode="view" candidateData={candidateData} />
+  ) : (
+    <div>Loading...</div>
+  )
+}
+
+export { AddCandidatePage, EditCandidatePage, ViewCandidatePage }

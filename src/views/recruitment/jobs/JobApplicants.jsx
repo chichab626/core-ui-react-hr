@@ -44,7 +44,7 @@ import {
   cilPencil,
   cilThumbUp,
   cilNoteAdd,
-  cilCheck,
+  cilCheck,cilXCircle
 } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import apiService from '../../../service/apiService'
@@ -155,8 +155,10 @@ const JobApplicants = ({ jobData }) => {
             jobId: applicant.jobId,
             name: applicant.candidate?.name,
             email: applicant.candidate?.email || applicant.candidate?.externalEmail,
+            externalEmail: applicant.candidate?.externalEmail,
             interviewStatus: applicant.interviewStatus,
             nextInterview: applicant.nextInterview,
+            userId: applicant.candidate?.userId
           }
 
           if (applicant.interviewStatus === 'Hired') {
@@ -176,6 +178,7 @@ const JobApplicants = ({ jobData }) => {
             candidateId: user.id,
             name: user.name,
             email: user.email || user.externalEmail,
+            externalEmail: user.externalEmail,
             userId: user.userId,
           }))
         setAvailableApplicants(availCandidates)
@@ -227,7 +230,7 @@ const JobApplicants = ({ jobData }) => {
   const updateStatus = async (applicant, status) => {
     try {
       applicant.interviewStatus = status
-      apiService.put('/applicants/' + applicant.id, applicant)
+      await apiService.put('/applicants/' + applicant.id, applicant)
       setSelectedApplicant(applicant)
       if (status == 'Job Offer') {
         setToastDeets({
@@ -240,6 +243,7 @@ const JobApplicants = ({ jobData }) => {
           letterType: 'Job Offer',
           applicants: [applicant],
           jobTitle: jobData.title,
+          from: localStorage.getItem('email'),
         })
       }
     } catch (err) {
@@ -305,6 +309,7 @@ const JobApplicants = ({ jobData }) => {
           letterType: 'Rejection',
           applicants: selectedApplicants,
           jobTitle: jobData.title,
+          from: localStorage.getItem('email'),
         })
       }
     } catch (error) {
@@ -370,6 +375,8 @@ const JobApplicants = ({ jobData }) => {
           ...jobApplicant,
           name: matchedCandidate.name,
           email: matchedCandidate.email,
+          userId: matchedCandidate.userId,
+          externalEmail: matchedCandidate.externalEmail,
         }
       : jobApplicant // Return the original job applicant if no match is found
   }
@@ -390,17 +397,24 @@ const JobApplicants = ({ jobData }) => {
     const payload = hired.map((applicant) => ({
       candidateId: applicant.candidateId,
       jobId: jobData.id,
-      interviewStatus: 'Hired'
+      interviewStatus: 'Hired',
+      userId: applicant.userId
     }))
 
-    // Prepare the payload for the API request
-    const payloadCandidates = hired.map((applicant) => applicant.candidateId)
+    let procs = [apiService.post('applicants/bulk-hire', payload)]
+    if (applicant.userId) {
+        // if applicant is employee just update employee info
+        procs.push(apiService.put(`employee/0`, { // id is 0 here to signal BE to use userId in the body
+            userId: applicant.userId,
+            jobTitle: jobData.title,
+            reportsTo: jobData.hiringManagerId
+        }))
+    } else {
+        apiService.post('candidates/bulk-hire', { candidateIds: hired.map((applicant) => applicant.candidateId) })
+    }
 
     try {
-      const [result, count] = await Promise.all([
-        apiService.post('applicants/bulk-hire', payload),
-        apiService.post('candidates/bulk-hire', { candidateIds: payloadCandidates }),
-      ])
+      const [result, unused] = await Promise.all(procs)
 
       // Assuming result.data contains the response data
       const mergedApplicants = result.data.map((applicant) => {
@@ -421,10 +435,35 @@ const JobApplicants = ({ jobData }) => {
         openPositions: jobData.openPositions - hired.length,
       })
 
+      if (applicant.userId) {
+        setToastDeets({
+            type: 'success',
+            message: `${applicant.name} is now hired for the ${jobData.title} position.`,
+            title: 'Hire Applicant',
+          })
+
+          return;
+      }
+
       setToastDeets({
         type: 'success',
-        message: `${applicant.name} is now hired for the ${jobData.title} position.`,
+        message: `${applicant.name} is now hired for the ${jobData.title} position. The IT team will be notified.`,
         title: 'Hire Applicant',
+      })
+
+      apiService.post('letters/draft-letters', {
+        letterType: 'New Hire',
+        applicants: [
+          {
+            candidateId: applicant.candidateId,
+            name: applicant.name,
+            email: applicant.externalEmail,
+            jobId: applicant.jobId,
+            companyEmail: applicant.email
+          },
+        ],
+        jobTitle: jobTitle,
+        from: localStorage.getItem('email'),
       })
     } catch (error) {
       console.error('Failed to hire applicants:', error)
@@ -600,7 +639,7 @@ const JobApplicants = ({ jobData }) => {
                                     {applicant.userId ? (
                                       <CIcon icon={cilCheck} className="text-success" />
                                     ) : (
-                                      ''
+                                        <CIcon icon={cilXCircle} className="text-danger" />
                                     )}
                                   </CTableDataCell>
                                 </CTableRow>
@@ -691,6 +730,7 @@ const JobApplicants = ({ jobData }) => {
                             </CTableHeaderCell>
                             <CTableHeaderCell>Name</CTableHeaderCell>
                             <CTableHeaderCell>Email</CTableHeaderCell>
+                            <CTableHeaderCell>Employee</CTableHeaderCell>
                             <CTableHeaderCell>Status</CTableHeaderCell>
                             <CTableHeaderCell>Next Interview</CTableHeaderCell>
                             <CTableHeaderCell>Actions</CTableHeaderCell>
@@ -718,6 +758,13 @@ const JobApplicants = ({ jobData }) => {
                                 </CTableDataCell>
                                 <CTableDataCell>{applicant.name}</CTableDataCell>
                                 <CTableDataCell>{applicant.email}</CTableDataCell>
+                                <CTableDataCell>
+                                    {applicant.userId ? (
+                                      <CIcon icon={cilCheck} className="text-success" />
+                                    ) : (
+                                        <CIcon icon={cilXCircle} className="text-danger" />
+                                    )}
+                                  </CTableDataCell>
                                 <CTableDataCell>{applicant.interviewStatus}</CTableDataCell>
                                 <CTableDataCell>
                                   {applicant.interviewStatus === 'Withdrawn' ? (
@@ -865,7 +912,9 @@ const JobApplicants = ({ jobData }) => {
                       <CTableHead>
                         <CTableRow>
                           <CTableHeaderCell>Name</CTableHeaderCell>
-                          <CTableHeaderCell>Email</CTableHeaderCell>
+                          <CTableHeaderCell>External Email</CTableHeaderCell>
+                          <CTableHeaderCell>Company Email</CTableHeaderCell>
+                          <CTableHeaderCell>Employee</CTableHeaderCell>
                         </CTableRow>
                       </CTableHead>
                       <CTableBody>
@@ -877,7 +926,15 @@ const JobApplicants = ({ jobData }) => {
                           hiredApplicants.map((applicant) => (
                             <CTableRow key={applicant.id}>
                               <CTableDataCell>{applicant.name}</CTableDataCell>
-                              <CTableDataCell>{applicant.email}</CTableDataCell>
+                              <CTableDataCell>{applicant.externalEmail}</CTableDataCell>
+                              <CTableDataCell>{applicant.userId ? applicant.email : ''}</CTableDataCell>
+                              <CTableDataCell>
+                                    {applicant.userId ? (
+                                      <CIcon icon={cilCheck} className="text-success" />
+                                    ) : (
+                                        <CIcon icon={cilXCircle} className="text-danger" />
+                                    )}
+                                  </CTableDataCell>
                             </CTableRow>
                           ))
                         )}

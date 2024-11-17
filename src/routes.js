@@ -60,9 +60,11 @@ const ViewJobPage = React.lazy(() => import('./views/recruitment/jobs/JobForm').
 const Candidates = React.lazy(() => import('./views/recruitment/candidates/Candidates'));
 const AddCandidatePage = React.lazy(() => import('./views/recruitment/candidates/CandidateForm').then(module => ({ default: module.AddCandidatePage })));
 const EditCandidatePage = React.lazy(() => import('./views/recruitment/candidates/CandidateForm').then(module => ({ default: module.EditCandidatePage })));
+const ViewCandidatePage = React.lazy(() => import('./views/recruitment/candidates/CandidateForm').then(module => ({ default: module.ViewCandidatePage })));
 
 const NewHires = React.lazy(() => import('./views/onboarding/NewHires'));
 const ChecklistPage = React.lazy(() => import('./views/onboarding/Checklist'));
+const MessagePage = React.lazy(() => import('./views/onboarding/Messages'));
 const LettersPage = React.lazy(() => import('./views/onboarding/Letters'));
 const AddLetterPage = React.lazy(() => import('./views/onboarding/LetterForm').then(module => ({ default: module.AddLetterPage })));
 const EditLetterPage = React.lazy(() => import('./views/onboarding/LetterForm').then(module => ({ default: module.EditLetterPage })));
@@ -88,9 +90,12 @@ const routes = [
     { path: '/recruitment/candidates', name: 'Candidates', element: Candidates },
     { path: '/recruitment/candidates/add', name: 'Add Candidate', element: AddCandidatePage },
     { path: '/recruitment/candidates/edit/:id', name: 'Edit Candidate', element: EditCandidatePage },
+    { path: '/recruitment/candidates/view/:id', name: 'View Candidate', element: ViewCandidatePage },
 
     { path: '/hr/letters', name: 'Letters', element: LettersPage },
+    { path: '/hr/messages', name: 'Messages', element: MessagePage },
     { path: '/hr/letters/edit/:id', name: 'Edit Letter', element: EditLetterPage },
+    { path: '/hr/letters/view/:id', name: 'Edit Letter', element: ViewLetterPage },
     { path: '/hr/onboarding', name: 'New Hires', element: NewHires },
     { path: '/hr/onboarding/checklist/:id', name: 'Checklist', element: ChecklistPage },
 
