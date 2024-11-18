@@ -41,7 +41,7 @@ const Employees = () => {
     const fetchData = async () => {
       try {
         const result = await apiService.get('/employee')
-        let filteredData = []
+        let filteredData = result
 
         if (loggedUser.role === 'Manager') {
             filteredData = result.filter((item) => item.reportsTo == loggedUser.employeeId || item.id == loggedUser.employeeId)

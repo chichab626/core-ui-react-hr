@@ -15,6 +15,7 @@ import Select from 'react-select'
 import { useNavigate, useParams } from 'react-router-dom'
 import apiService from '../../service/apiService.js'
 import SalaryInput from '../../components/SalaryInput'
+import Rating from './Rating.jsx'
 
 const EmployeeForm = ({ mode, employee, onSubmit, managers }) => {
   const navigate = useNavigate()
@@ -40,6 +41,7 @@ const EmployeeForm = ({ mode, employee, onSubmit, managers }) => {
         {mode === 'add' ? 'Add Employee' : mode === 'edit' ? 'Edit Employee' : 'View Employee'}
       </CCardHeader>
       <CCardBody>
+        
         <CForm onSubmit={(e) => onSubmit(e, formData)}>
           {mode !== 'add' && (
             <CRow>
@@ -148,6 +150,7 @@ const EmployeeForm = ({ mode, employee, onSubmit, managers }) => {
                 />
               )}
             </CCol>
+            
           </CRow>
 
           {mode === 'view' && (
@@ -173,6 +176,8 @@ const EmployeeForm = ({ mode, employee, onSubmit, managers }) => {
             </CRow>
           )}
         </CForm>
+        <CRow><Rating employeeId={formData.employeeId} mode={mode}/></CRow>
+        
       </CCardBody>
     </CCard>
   )
