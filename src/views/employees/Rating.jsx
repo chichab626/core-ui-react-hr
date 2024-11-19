@@ -29,7 +29,7 @@ const Rating = ({ employeeId, mode }) => {
   const fetchRatings = async () => {
     try {
       const response = await apiService.get(`employee/ratings/${employeeId}`)
-      setRatings(response)
+      setRatings(response.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
     } catch (error) {
       console.error('Error fetching ratings:', error)
       setStatus({
@@ -85,13 +85,14 @@ const Rating = ({ employeeId, mode }) => {
       })
 
       // Update the ratings list with the new rating from the response
-      setRatings(response)
+      setRatings(response.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
 
       // Reset the form
       setNewRating({
         score: 0,
         reviewerId: localStorage.getItem('email'),
         comments: '',
+        date: new Date().toISOString(),
       })
 
       setStatus({
@@ -117,7 +118,7 @@ const Rating = ({ employeeId, mode }) => {
       }
 
       await apiService.put(`/employee/ratings/${employeeId}`, { ratings: newRatings })
-      setRatings(newRatings)
+      setRatings(newRatings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
       setStatus({
         type: 'success',
         message: 'Rating deleted successfully',
@@ -159,7 +160,14 @@ const Rating = ({ employeeId, mode }) => {
                       ))}
                     </div>
                     <div className="text-medium-emphasis">
-                      <strong>Reviewer:</strong> {rating.reviewerId}
+                      <strong>Reviewed By:</strong> {rating.reviewerId}{rating.createdAt && (
+                        <>
+                          {' '}
+                           on {new Date(rating.createdAt).toLocaleDateString('en-CA')}
+
+                        </>
+                      )}
+
                     </div>
                     {rating.comments && (
                       <div className="mt-2">

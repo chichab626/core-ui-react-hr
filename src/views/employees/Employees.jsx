@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { FaStar } from 'react-icons/fa'
 import {
   CTable,
   CTableHead,
@@ -44,9 +45,11 @@ const Employees = () => {
         let filteredData = result
 
         if (loggedUser.role === 'Manager') {
-            filteredData = result.filter((item) => item.reportsTo == loggedUser.employeeId || item.id == loggedUser.employeeId)
+          filteredData = result.filter(
+            (item) => item.reportsTo == loggedUser.employeeId || item.id == loggedUser.employeeId,
+          )
         }
-        
+
         setData(filteredData)
       } catch (error) {
         console.error('Error fetching employees:', error)
@@ -54,6 +57,17 @@ const Employees = () => {
     }
     fetchData()
   }, [])
+
+  function getLatestScore(reviews) {
+    if (!reviews || reviews.length === 0) return null // Handle empty or undefined input
+
+    // Find the review with the latest `createdAt` date
+    const latestReview = reviews.reduce((latest, current) => {
+      return new Date(current.createdAt) > new Date(latest.createdAt) ? current : latest
+    })
+
+    return latestReview.score // Return only the score
+  }
 
   // Filter data based on search term
   const filteredData = data.filter(
@@ -81,14 +95,24 @@ const Employees = () => {
     const newSortDirection = sortColumn === column && sortDirection === 'asc' ? 'desc' : 'asc'
     setSortColumn(column)
     setSortDirection(newSortDirection)
-
+  
     const sortedData = [...filteredData].sort((a, b) => {
-      if (a[column] < b[column]) return newSortDirection === 'asc' ? -1 : 1
-      if (a[column] > b[column]) return newSortDirection === 'asc' ? 1 : -1
+      let aValue = a[column]
+      let bValue = b[column]
+  
+      if (column === 'rating') {
+        aValue = getLatestScore(a.ratings) || 0 // Default to 0 if no ratings
+        bValue = getLatestScore(b.ratings) || 0
+      }
+  
+      if (aValue < bValue) return newSortDirection === 'asc' ? -1 : 1
+      if (aValue > bValue) return newSortDirection === 'asc' ? 1 : -1
       return 0
     })
+  
     setData(sortedData)
   }
+  
 
   const handleEditClick = (id) => {
     navigate(`/hr/employees/edit/${id}`) // Update route as needed
@@ -129,6 +153,9 @@ const Employees = () => {
                   <CTableHeaderCell onClick={() => handleSort('location')}>
                     Location {sortColumn === 'location' && (sortDirection === 'asc' ? '↑' : '↓')}
                   </CTableHeaderCell>
+                  <CTableHeaderCell onClick={() => handleSort('rating')}>
+                    Latest Rating {sortColumn === 'rating' && (sortDirection === 'asc' ? '↑' : '↓')}
+                  </CTableHeaderCell>
                   <CTableHeaderCell>Actions</CTableHeaderCell>
                 </CTableRow>
               </CTableHead>
@@ -144,6 +171,27 @@ const Employees = () => {
                       <CTableDataCell>{employee.email}</CTableDataCell>
                       <CTableDataCell>{employee.jobTitle}</CTableDataCell>
                       <CTableDataCell>{employee.location}</CTableDataCell>
+                      <CTableDataCell>
+                        {employee.ratings.length > 0 ? (
+                          <div className="mb-2">
+                            {[...Array(5)].map((_, index) => (
+                              <FaStar
+                                key={index}
+                                style={{
+                                  color:
+                                    index < getLatestScore(employee.ratings)
+                                      ? '#ffc107'
+                                      : '#e4e5e9',
+                                  marginRight: '4px',
+                                }}
+                                size={20}
+                              />
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-medium-emphasis text-center">No ratings available</p>
+                        )}
+                      </CTableDataCell>
                       <CTableDataCell>
                         <CButton
                           color="info"
