@@ -155,9 +155,10 @@ const MessagePage = () => {
                         <CTableHeaderCell>Title</CTableHeaderCell>
                         <CTableHeaderCell>Recipient</CTableHeaderCell>
                         <CTableHeaderCell>Type</CTableHeaderCell>
-                        <CTableHeaderCell>Date Sent</CTableHeaderCell>
-                        <CTableHeaderCell>Status</CTableHeaderCell>
-                        <CTableHeaderCell>Actions</CTableHeaderCell>
+                        
+                        
+                        { activeTab === 'Sent' && (<><CTableHeaderCell>Date Sent</CTableHeaderCell></>)}
+                        <CTableHeaderCell >Actions</CTableHeaderCell>
                       </CTableRow>
                     </CTableHead>
                     <CTableBody>
@@ -166,8 +167,9 @@ const MessagePage = () => {
                           <CTableDataCell>{letter.subject}</CTableDataCell>
                           <CTableDataCell>{letter.recipient}</CTableDataCell>
                           <CTableDataCell>{letter.type}</CTableDataCell>
-                          <CTableDataCell>{letter.dateSent}</CTableDataCell>
-                          <CTableDataCell>{letter.status}</CTableDataCell>
+                          
+                          { activeTab === 'Sent' && (<><CTableDataCell>{letter.dateSent}</CTableDataCell></>)}
+                          
                           <CTableDataCell>
                             <CButton
                               color={activeTab === 'Drafts'? 'info' : 'secondary'}
