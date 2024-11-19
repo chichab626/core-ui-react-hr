@@ -50,9 +50,12 @@ const Jobs = () => {
             `applicants/find-applications?email=${localStorage.getItem('email')}`,
           )
           setApplications(applications)
-        } 
+        }
 
-        const jobs = await apiService.get('/job?applicants=true' + (role === 'Manager'? `&managerId=${localStorage.getItem('employeeId')}` : ''))
+        const jobs = await apiService.get(
+          '/job?applicants=true' +
+            (role === 'Manager' ? `&managerId=${localStorage.getItem('employeeId')}` : ''),
+        )
 
         // Enrich job data with application details
         const enrichedJobs = jobs.map((job) => {
@@ -153,22 +156,19 @@ const Jobs = () => {
         ),
       )
 
-
-
       setData((prev) => {
         console.log('prev', application)
         return prev.map((one) => {
-            if (one.id === application.jobId) {
-                const newOne = { ...one, hasApplied: true, applicationDetails: application }
-                console.log('newOne', newOne)
-                return newOne
-            } else {
-                console.log('oldOne', one)
-                return one
-            }
+          if (one.id === application.jobId) {
+            const newOne = { ...one, hasApplied: true, applicationDetails: application }
+            console.log('newOne', newOne)
+            return newOne
+          } else {
+            console.log('oldOne', one)
+            return one
+          }
         })
-    })
-
+      })
     } catch {
       setToastDeets({
         type: 'danger',
@@ -226,10 +226,12 @@ const Jobs = () => {
                   <CTableBody>
                     {currentData.length > 0 ? (
                       currentData.map((row) => (
-                        <CTableRow key={row.id} onClick={() => navigate(`/recruitment/jobs/view/${row.id}`)}>
-                          <CTableDataCell>
-                            {row.title}
-                          </CTableDataCell>
+                        <CTableRow
+                          key={row.id}
+                          style={{ cursor: 'pointer' }}
+                          onClick={() => navigate(`/recruitment/jobs/view/${row.id}`)}
+                        >
+                          <CTableDataCell>{row.title}</CTableDataCell>
                           <CTableDataCell>{row.location}</CTableDataCell>
                           <CTableDataCell>{`$${parseFloat(row.salary).toLocaleString()}`}</CTableDataCell>
                           <CTableDataCell>{row.openPositions}</CTableDataCell>
@@ -238,7 +240,7 @@ const Jobs = () => {
                               <CButton
                                 color="secondary"
                                 className="position-relative me-3"
-                                onClick={() => handleApplicantClick(row.id)}
+                                onClick={(e) => {e.stopPropagation(); handleApplicantClick(row.id)}}
                               >
                                 Applicants
                                 <CBadge
@@ -252,7 +254,10 @@ const Jobs = () => {
                             ) : role === 'Employee' && row.openPositions > 1 ? (
                               row.hasApplied ? (
                                 row.applicationDetails?.interviewStatus === 'Hired' ? (
-                                  <CCallout color="success" style={{'--cui-callout-padding-y': '3px'}}>
+                                  <CCallout
+                                    color="success"
+                                    style={{ '--cui-callout-padding-y': '3px' }}
+                                  >
                                     Hired last{' '}
                                     {new Date(row.applicationDetails?.appliedAt).toLocaleDateString(
                                       'en-US',
@@ -265,15 +270,17 @@ const Jobs = () => {
                                   </CCallout>
                                 ) : row.applicationDetails?.interviewStatus === 'Withdrawn' ||
                                   row.applicationDetails?.interviewStatus === 'Rejected' ? (
-                                    
                                   <CButton
                                     color="secondary"
-                                    onClick={() => handleApplyClick(row.id)}
+                                    onClick={(e) => {e.stopPropagation(); handleApplyClick(row.id)}}
                                   >
                                     Apply again
                                   </CButton>
                                 ) : (
-                                    <CCallout color="secondary" style={{'--cui-callout-padding-y': '3px'}}>
+                                  <CCallout
+                                    color="secondary"
+                                    style={{ '--cui-callout-padding-y': '3px' }}
+                                  >
                                     Applied on{' '}
                                     {new Date(row.applicationDetails?.appliedAt).toLocaleDateString(
                                       'en-US',
@@ -286,7 +293,7 @@ const Jobs = () => {
                                   </CCallout>
                                 )
                               ) : (
-                                <CButton color="primary" onClick={() => handleApplyClick(row.id)}>
+                                <CButton color="primary" onClick={(e) => {e.stopPropagation(); handleApplyClick(row.id)}}>
                                   Apply
                                 </CButton>
                               )
@@ -297,11 +304,16 @@ const Jobs = () => {
                                 <CButton
                                   color="info"
                                   className="me-2"
-                                  onClick={() => handleEditClick(row.id)}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleEditClick(row.id)
+                                  }}
                                 >
                                   <CIcon icon={cilPencil} />
                                 </CButton>
-                                <CButton color="danger" onClick={() => handleDeleteClick(row.id)}>
+                                <CButton color="danger" onClick={(e) =>{ 
+                                    e.stopPropagation()
+                                    handleDeleteClick(row.id)}}>
                                   <CIcon icon={cilTrash} />
                                 </CButton>
                               </>

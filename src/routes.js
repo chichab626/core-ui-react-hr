@@ -85,7 +85,7 @@ const routes = [
     { path: '/recruitment/jobs', name: 'Jobs', element: Jobs },
     { path: '/recruitment/jobs/add', name: 'Add Job', element: AddJobPage },
     { path: '/recruitment/jobs/edit/:id', name: 'Edit Job', element: EditJobPage },
-    { path: '/recruitment/jobs/view/:id', name: 'Edit Job', element: ViewJobPage },
+    { path: '/recruitment/jobs/view/:id', name: 'View Job', element: ViewJobPage },
     { path: '/recruitment/jobs/applicants/:id', name: 'Job Applicants', element: JobApplicantsPage },
     { path: '/recruitment/candidates', name: 'Candidates', element: Candidates },
     { path: '/recruitment/candidates/add', name: 'Add Candidate', element: AddCandidatePage },

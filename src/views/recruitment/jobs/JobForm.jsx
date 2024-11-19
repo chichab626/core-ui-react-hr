@@ -223,7 +223,7 @@ const ViewJobPage = () => {
       }
     }
     fetchJob()
-  }, [id])
+  }, [])
 
   if (isLoading) {
     return <CSpinner />
@@ -251,7 +251,7 @@ const EditJobPage = () => {
       }
     }
     fetchJob()
-  }, [id])
+  }, [])
 
   if (isLoading) {
     return <CSpinner />
