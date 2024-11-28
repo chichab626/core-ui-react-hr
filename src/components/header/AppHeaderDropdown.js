@@ -67,11 +67,16 @@ const AppHeaderDropdown = () => {
               Settings
             </CDropdownItem>
             <CDropdownDivider />
-            <CDropdownItem href="#" onClick={() => { 
+            <CDropdownItem onClick={() => { 
               // Handle logout, for example by clearing the user from localStorage
-              localStorage.removeItem('user');
-              localStorage.removeItem('token');
-              localStorage.removeItem('role');
+
+              localStorage.removeItem('authToken'); // Store JWT token
+              localStorage.removeItem('role'); // Store user role
+              localStorage.removeItem('email')
+              localStorage.removeItem('employeeId')
+              localStorage.removeItem('user')
+              localStorage.removeItem('profile')
+
               navigate('/login')
             }}>
               <CIcon icon={cilLockLocked} className="me-2" />

@@ -220,6 +220,7 @@ const Jobs = () => {
                         Open Positions{' '}
                         {sortColumn === 'openPositions' && (sortDirection === 'asc' ? '↑' : '↓')}
                       </CTableHeaderCell>
+                      {role && <CTableHeaderCell>Type</CTableHeaderCell>}
                       {role && <CTableHeaderCell>Actions</CTableHeaderCell>}
                     </CTableRow>
                   </CTableHead>
@@ -235,6 +236,7 @@ const Jobs = () => {
                           <CTableDataCell>{row.location}</CTableDataCell>
                           <CTableDataCell>{`$${parseFloat(row.salary).toLocaleString()}`}</CTableDataCell>
                           <CTableDataCell>{row.openPositions}</CTableDataCell>
+                          {role && <CTableDataCell>{row.jobType}</CTableDataCell>}
                           <CTableDataCell>
                             {allowedUsers.includes(role) ? (
                               <CButton

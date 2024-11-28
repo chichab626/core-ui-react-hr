@@ -26,6 +26,8 @@ const JobForm = ({ mode, jobData }) => {
   const [openPositions, setOpenPositions] = useState('')
   const [jobDescription, setJobDescription] = useState('')
   const [hiringManager, setHiringManager] = useState(null)
+  const [jobType, setJobType] = useState(null); // Initially blank
+
   const [managers, setManagers] = useState([])
   const [toastDeets, setToastDeets] = useState({})
   const navigate = useNavigate()
@@ -52,6 +54,7 @@ const JobForm = ({ mode, jobData }) => {
       setSalary(jobData.salary)
       setOpenPositions(jobData.openPositions)
       setJobDescription(jobData.description)
+      setJobType(jobData.jobType);
     }
 
     fetchHiringManagers()
@@ -68,6 +71,7 @@ const JobForm = ({ mode, jobData }) => {
         salary,
         openPositions,
         jobDescription,
+        jobType,
         hiringManagerId: hiringManager?.value,
       }
 
@@ -148,6 +152,34 @@ const JobForm = ({ mode, jobData }) => {
                 />
               </CCol>
             </CRow>
+            <CRow className="mb-3">
+  <CCol>
+    <CFormLabel>Job Type</CFormLabel>
+    <Select
+      value={jobType ? { value: jobType, label: jobType } : null}
+      onChange={(selectedOption) => setJobType(selectedOption.value)}
+      options={[
+        { value: 'Internal', label: 'Internal' },
+        { value: 'External', label: 'External' },
+      ]}
+      isDisabled={mode === 'view'}
+      placeholder="Select Job Type"
+      required
+      theme={(theme) => ({
+        ...theme,
+        colors: {
+          ...theme.colors,
+          primary25: '#495057',
+          primary: '#ced4da',
+          neutral0: 'rgb(33 38 49)',
+          neutral80: '#fff',
+          neutral20: '#6c757d',
+        },
+      })}
+    />
+  </CCol>
+</CRow>
+
             <CRow className="mb-3">
               <CCol>
                 <CFormLabel>Hiring Manager</CFormLabel>

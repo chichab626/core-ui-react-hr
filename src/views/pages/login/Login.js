@@ -40,7 +40,6 @@ const Login = () => {
       localStorage.setItem('role', role); // Store user role
       localStorage.setItem('email', user.email)
       localStorage.setItem('employeeId', employeeId)
-
       localStorage.setItem('user', JSON.stringify(user) )
       localStorage.setItem('profile', JSON.stringify({candidate, employee}) )
 
