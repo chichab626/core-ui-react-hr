@@ -76,8 +76,9 @@ const AppHeaderDropdown = () => {
               localStorage.removeItem('employeeId')
               localStorage.removeItem('user')
               localStorage.removeItem('profile')
-
-              navigate('/login')
+              //reload window
+              navigate('/dashboard')
+              window.location.reload();
             }}>
               <CIcon icon={cilLockLocked} className="me-2" />
               Logout

@@ -45,7 +45,7 @@ const Jobs = () => {
     const fetchJobs = async () => {
       try {
         let applications = []
-        if (role === 'Employee') {
+        if (role === 'Employee' || role === 'Guest') {
           applications = await apiService.get(
             `applicants/find-applications?email=${localStorage.getItem('email')}`,
           )
@@ -58,7 +58,7 @@ const Jobs = () => {
         )
 
         // Enrich job data with application details
-        const enrichedJobs = jobs.map((job) => {
+        let enrichedJobs = jobs.map((job) => {
           const matchingApp = applications.find((app) => app.jobId === job.id)
           return {
             ...job,
@@ -67,6 +67,10 @@ const Jobs = () => {
           }
         })
 
+        // filter jobs based on role by jobType
+        if (role == 'Guest') {
+            enrichedJobs = enrichedJobs.filter((job) => job.jobType === 'External')
+        }
         setData(enrichedJobs)
         console.log(enrichedJobs)
       } catch (error) {
@@ -253,7 +257,7 @@ const Jobs = () => {
                                   {row.applicantCount}
                                 </CBadge>
                               </CButton>
-                            ) : role === 'Employee' && row.openPositions > 1 ? (
+                            ) : (role === 'Employee' || role === 'Guest') && row.openPositions >= 1 ? (
                               row.hasApplied ? (
                                 row.applicationDetails?.interviewStatus === 'Hired' ? (
                                   <CCallout

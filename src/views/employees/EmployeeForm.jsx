@@ -260,7 +260,7 @@ const EditEmployeePage = () => {
         jobTitle: data.jobTitle,
         location: data.location,
         salary: parseFloat(data.salary),
-        reportsTo: data.reportsTo.value,
+        reportsTo: data.reportsTo,
       }
 
       await apiService.put('/employee/' + id, newData)

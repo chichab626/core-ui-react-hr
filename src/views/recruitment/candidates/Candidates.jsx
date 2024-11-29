@@ -181,7 +181,7 @@ const Candidates = () => {
                             )}
                           </CTableDataCell>
                           <CTableDataCell>
-                            {candidate.status === 'Hired' && (loggedUser.role === 'HR' || loggedUser.role === 'Manager') && (
+                            {!candidate.userId && (loggedUser.role === 'HR' || loggedUser.role === 'Manager') && (
                               <>
                                 <CButton
                                   color="info"

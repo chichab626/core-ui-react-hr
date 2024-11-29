@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
@@ -29,8 +29,13 @@ export const AppSidebarNav = ({ items }) => {
   }
 
   const navItem = (item, index, indent = false) => {
-    if (item?.role && !item?.role?.includes(localStorage.getItem('role'))) {
+    const [role, setRole] = useState(localStorage.getItem('role'))
+    if (item?.role && !item?.role?.includes(role)) {
       return
+    }
+
+    if ((item?.name == 'Login' || item?.name == 'Register') && role) {
+        return
     }
     const { component, name, badge, icon, ...rest } = item
     const Component = component

@@ -372,7 +372,8 @@ const AddCandidatePage = () => {
 }
 
 const EditCandidatePage = ({candidateId}) => {
-  const  id  = candidateId ? candidateId : useParams()
+  const  id  = candidateId ? candidateId : useParams()['id']
+
   const [candidateData, setCandidateData] = useState(null)
 
   useEffect(() => {

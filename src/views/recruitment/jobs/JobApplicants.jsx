@@ -135,7 +135,7 @@ const JobApplicants = ({ jobData }) => {
       setLocation(jobData.location)
       setSalary(jobData.salary)
       setOpenPositions(jobData.openPositions)
-      setJobDescription(jobData.jobDescription)
+      setJobDescription(jobData.description)
     }
 
     const fetchAllList = async () => {
@@ -402,7 +402,8 @@ const JobApplicants = ({ jobData }) => {
     }))
 
     let procs = [apiService.post('applicants/bulk-hire', payload)]
-    if (applicant.userId) {
+    const isEmployee = applicant.email !== applicant.externalEmail
+    if (isEmployee) {
         // if applicant is employee just update employee info
         procs.push(apiService.put(`employee/0`, { // id is 0 here to signal BE to use userId in the body
             userId: applicant.userId,
@@ -435,7 +436,7 @@ const JobApplicants = ({ jobData }) => {
         openPositions: jobData.openPositions - hired.length,
       })
 
-      if (applicant.userId) {
+      if (isEmployee) {
         setToastDeets({
             type: 'success',
             message: `${applicant.name} is now hired for the ${jobData.title} position.`,
@@ -529,7 +530,7 @@ const JobApplicants = ({ jobData }) => {
               <CCardHeader as="h5" className="text-center">
                 {jobTitle}
               </CCardHeader>
-              <CCardText className="mx-4 my-4">{jobDescription}</CCardText>
+              {/* <CCardText className="mx-4 my-4">{jobDescription}</CCardText> */}
               <CCardBody>
                 <CRow className="col-12 mx-auto">
                   <CCol>
@@ -545,6 +546,10 @@ const JobApplicants = ({ jobData }) => {
                   <CCol>
                     <CFormLabel></CFormLabel>
                     <CFormInput label="Location" value={location} contentEditable="false" />
+                  </CCol>
+                  <CCol>
+                    <CFormLabel></CFormLabel>
+                    <CFormInput label="Type" value={jobData.jobType} contentEditable="false" />
                   </CCol>
                 </CRow>
               </CCardBody>
@@ -636,7 +641,7 @@ const JobApplicants = ({ jobData }) => {
                                   <CTableDataCell>{applicant.name}</CTableDataCell>
                                   <CTableDataCell>{applicant.email}</CTableDataCell>
                                   <CTableDataCell>
-                                    {applicant.userId ? (
+                                    {applicant.email !== applicant.externalEmail ? (
                                       <CIcon icon={cilCheck} className="text-success" />
                                     ) : (
                                         <CIcon icon={cilXCircle} className="text-danger" />
@@ -759,7 +764,7 @@ const JobApplicants = ({ jobData }) => {
                                 <CTableDataCell>{applicant.name}</CTableDataCell>
                                 <CTableDataCell>{applicant.email}</CTableDataCell>
                                 <CTableDataCell>
-                                    {applicant.userId ? (
+                                    {applicant.email !== applicant.externalEmail ? (
                                       <CIcon icon={cilCheck} className="text-success" />
                                     ) : (
                                         <CIcon icon={cilXCircle} className="text-danger" />
@@ -929,7 +934,7 @@ const JobApplicants = ({ jobData }) => {
                               <CTableDataCell>{applicant.externalEmail}</CTableDataCell>
                               <CTableDataCell>{applicant.userId ? applicant.email : ''}</CTableDataCell>
                               <CTableDataCell>
-                                    {applicant.userId ? (
+                                    {applicant.email !== applicant.externalEmail ? (
                                       <CIcon icon={cilCheck} className="text-success" />
                                     ) : (
                                         <CIcon icon={cilXCircle} className="text-danger" />

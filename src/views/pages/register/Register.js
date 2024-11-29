@@ -12,11 +12,13 @@ import {
   CRow,
 } from '@coreui/react';
 import CIcon from '@coreui/icons-react';
-import { cilLockLocked, cilUser, cilPhone, cilLocationPin} from '@coreui/icons';
+import { cilLockLocked, cilUser, cilPhone, cilLocationPin } from '@coreui/icons';
 import apiService from '../../../service/apiService.js'; // Ensure this path is correct
 import ToastNotification from '../../../components/ToasterNotification.jsx'; // Ensure this component exists
+import { useNavigate } from 'react-router-dom'; // Import for navigation
 
 const Register = () => {
+  const navigate = useNavigate(); // Hook for navigation
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -25,6 +27,9 @@ const Register = () => {
   const [location, setLocation] = useState('');
   const [loading, setLoading] = useState(false);
   const [toastDeets, setToastDeets] = useState({});
+  const [countdown, setCountdown] = useState(5); // State to manage countdown
+  const [redirecting, setRedirecting] = useState(false); // State to trigger redirection after countdown
+
   const notify = (type, message, title) => setToastDeets({ type, message, title });
 
   const handleSubmit = async (e) => {
@@ -57,13 +62,27 @@ const Register = () => {
       name,
       phone,
       location,
-      role : 'Guest'
+      role: 'Guest',
     };
 
     try {
       const response = await apiService.post('/users', newUser); // Update endpoint as needed
-      notify('success', `Account created successfully! Go to Login Page.`, 'Registration Complete');
+      notify('success', `Account created successfully! Redirecting to login...`, 'Registration Complete');
       console.log('API Response:', response);
+
+      // Start countdown after successful registration
+      let countdownTimer = 5;
+      setRedirecting(true); // Indicate that redirection is in process
+      const timer = setInterval(() => {
+        if (countdownTimer <= 0) {
+          clearInterval(timer); // Clear timer when countdown reaches 0
+          navigate('/login'); // Redirect to login page
+        } else {
+          setCountdown(countdownTimer); // Update countdown state
+          countdownTimer--;
+        }
+      }, 1000); // Update every second
+
     } catch (error) {
       console.error('API Error:', error);
       notify('error', 'An error occurred during registration. Please try again.', 'API Error');
@@ -165,6 +184,13 @@ const Register = () => {
                       {loading ? 'Creating Account...' : 'Create Account'}
                     </CButton>
                   </div>
+
+                  {/* Countdown */}
+                  {redirecting && (
+                    <div className="mt-3">
+                      <p>Redirecting to login in {countdown} seconds...</p>
+                    </div>
+                  )}
                 </CForm>
               </CCardBody>
             </CCard>

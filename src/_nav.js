@@ -19,7 +19,8 @@ import {
   cilSettings,
   cilSpeedometer,
   cilStar,
-  cilEnvelopeOpen
+  cilEnvelopeOpen,
+  cilAccountLogout
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 
@@ -43,18 +44,19 @@ const _nav = [
       color: 'info',
       text: 2,
     },
-    role: ['Administrator', 'HR', 'Manager', 'Candidate', 'Employee']
+    role: ['Administrator', 'HR', 'Manager', 'Guest', 'Employee']
   },
   {
     component: CNavTitle,
     name: 'Recruitment',
+    role: ['Administrator', 'HR', 'Manager', 'Employee']
   },
   {
     component: CNavItem,
     name: 'Jobs',
     to: '/recruitment/jobs',
     icon: <CIcon icon={cilBriefcase} customClassName="nav-icon" />,
-    role: ['Administrator', 'HR', 'Manager', 'Candidate', 'Employee', null]
+    role: ['Administrator', 'HR', 'Manager', 'Candidate', 'Employee', 'Guest', null]
   },
   {
     component: CNavItem,
@@ -66,6 +68,7 @@ const _nav = [
   {
     component: CNavTitle,
     name: 'Human Resources',
+    role: ['Administrator', 'HR', 'Manager', 'Employee']
   },
   {
     component: CNavItem,
@@ -98,7 +101,7 @@ const _nav = [
     name: 'Profile',
     to: '/admin/user/me',
     icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
-    role: ['Manager', 'Employee']
+    role: ['Manager', 'Employee', 'Guest']
   },
   {
     component: CNavItem,
@@ -109,9 +112,8 @@ const _nav = [
   {
     component: CNavItem,
     name: 'Register',
-    to: '/admin/user/add',
-    icon: <CIcon icon={cilBook} customClassName="nav-icon" />,
-    role: ['Administrator']
+    to: '/register',
+    icon: <CIcon icon={cilBook} customClassName="nav-icon" />
   },
 
 // above are the custom menu items
