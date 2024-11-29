@@ -173,7 +173,7 @@ const JobApplicants = ({ jobData }) => {
         setAddedApplicants(otherApplicants)
 
         const availCandidates = candidates
-          .filter((applicant) => !jobApplicants.some((a) => a.candidateId === applicant.id))
+          .filter((applicant) => !jobApplicants.some((a) => a.candidateId === applicant.id || applicant.email === localStorage.getItem('email')))
           .map((user) => ({
             candidateId: user.id,
             name: user.name,
