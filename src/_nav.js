@@ -115,6 +115,13 @@ const _nav = [
     to: '/register',
     icon: <CIcon icon={cilBook} customClassName="nav-icon" />
   },
+  {
+    component: CNavItem,
+    name: 'New User',
+    to: '/admin/user/add',
+    icon: <CIcon icon={cilBook} customClassName="nav-icon" />,
+    role: ['Administrator']
+  },
 
 // above are the custom menu items
 
